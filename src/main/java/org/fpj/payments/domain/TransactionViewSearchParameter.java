@@ -8,6 +8,7 @@ import java.time.Instant;
 
 import java.math.BigDecimal;
 import java.time.*;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -75,5 +76,49 @@ public class TransactionViewSearchParameter {
                 ? date.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant()
                 : null;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        TransactionViewSearchParameter that = (TransactionViewSearchParameter) o;
+        return Objects.equals(currentUserID, that.currentUserID)
+                && Objects.equals(description, that.description)
+                && Objects.equals(createdFrom, that.createdFrom)
+                && Objects.equals(createdTo, that.createdTo)
+                && Objects.equals(senderRecipientUsername, that.senderRecipientUsername)
+                && Objects.equals(amountFrom, that.amountFrom)
+                && Objects.equals(amountTo, that.amountTo);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                currentUserID,
+                description,
+                createdFrom,
+                createdTo,
+                senderRecipientUsername,
+                amountFrom,
+                amountTo
+        );
+    }
+
+    public TransactionViewSearchParameter copy() {
+        return new TransactionViewSearchParameter(
+                this.currentUserID,
+                this.description,
+                this.createdFrom,
+                this.createdTo,
+                this.senderRecipientUsername,
+                this.amountFrom,
+                this.amountTo
+        );
+    }
+
 }
 
