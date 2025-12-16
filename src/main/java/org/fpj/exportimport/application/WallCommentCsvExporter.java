@@ -48,7 +48,7 @@ public class WallCommentCsvExporter {
     private String formatInstant(Instant instant) {
         DateTimeFormatter formatter = DateTimeFormatter
                 .ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.of("Europe/Berlin"));
+                .withZone(UiHelpers.LOCAL_ZONE);
         return formatter.format(instant);
     }
 }
