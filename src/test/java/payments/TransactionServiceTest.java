@@ -1,5 +1,6 @@
 package payments;
 
+import org.fpj.exceptions.TransactionException;
 import org.fpj.payments.application.TransactionService;
 import org.fpj.payments.domain.*;
 import org.fpj.users.application.UserService;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -79,6 +81,20 @@ public class TransactionServiceTest {
         assertEquals(expectedTransaction, actual.transaction());
         assertEquals(expectedCurrentBalance, actual.newBalance());
     }
+
+    @Test
+    public void testSendTransfersPayoutFailed(){
+        final int senderBalanceDeficient = 100;
+
+        when(sender.getId()).thenReturn(SENDER_ID);
+        when(userRepo.lockById(SENDER_ID)).thenReturn(Optional.of(sender));
+        when(txRepo.computeBalance(SENDER_ID)).thenReturn(BigDecimal.valueOf(senderBalanceDeficient));
+        when(transactionLite.type()).thenReturn(TransactionType.AUSZAHLUNG);
+        when(transactionLite.amount()).thenReturn(AMOUNT);
+
+        assertThrows(TransactionException.class, () -> underTest.sendTransfers(transactionLite, sender));
+    }
+
 
 
 
