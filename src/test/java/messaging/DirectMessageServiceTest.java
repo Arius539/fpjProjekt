@@ -48,9 +48,11 @@ public class DirectMessageServiceTest {
 
     @Test
     public void testGetChatPreviews(){
+        final String text1 = "Hallo wie geht es dir?";
+        final String text2 = "Hallo wo bleibt mein Geld!?";
         List<User> content = List.of(contact1, contact2);
-        final DirectMessage lastMessageWithC1 = new DirectMessage(null, currentUser, contact1, "Hallo wie geht es dir?", Instant.ofEpochSecond(2348756));
-        final DirectMessage lastMessageWithC2 = new DirectMessage(null, contact2, currentUser, "Hallo wo bleibt mein Geld!?", Instant.ofEpochSecond(43785));
+        final DirectMessage lastMessageWithC1 = new DirectMessage(null, currentUser, contact1, text1, Instant.ofEpochSecond(2348756));
+        final DirectMessage lastMessageWithC2 = new DirectMessage(null, contact2, currentUser, text2, Instant.ofEpochSecond(43785));
         Page<User> contactsPage = new PageImpl<>(content);
 
         when(currentUser.getId()).thenReturn(CURRENT_USER_ID);
@@ -62,8 +64,13 @@ public class DirectMessageServiceTest {
 
         Page<ChatPreview> chatPreviews = underTest.getChatPreviews(currentUser, pageable);
         long totalElements = chatPreviews.getTotalElements();
+        List<ChatPreview> chatPreviewList = chatPreviews.getContent();
+        ChatPreview firstChatPreview = chatPreviewList.get(0);
+        ChatPreview secondChatPreview = chatPreviewList.get(1);
 
         assertEquals(2, totalElements);
+        assertEquals(text1, firstChatPreview.lastMessage());
+        assertEquals(text2, secondChatPreview.lastMessage());
     }
 
 }
