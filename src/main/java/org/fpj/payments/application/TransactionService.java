@@ -132,7 +132,7 @@ public class TransactionService {
             currentBalance = currentBalance.subtract(transactionLite.amount());
             transaction = this.withdraw(currentUser, transactionLite.amount(), transactionLite.description());
         } else {
-            if (currentBalance.compareTo(transactionLite.amount()) < 0) throw new TransactionException("Nicht genügend Guthaben für die Auszahlung.");
+            if (currentBalance.compareTo(transactionLite.amount()) < 0) throw new TransactionException("Nicht genügend Guthaben für die Überweisung.");
             currentBalance = currentBalance.subtract(transactionLite.amount());
 
             if (transactionLite.recipientUsername() == null || transactionLite.recipientUsername().isBlank()) {
@@ -158,7 +158,7 @@ public class TransactionService {
         }
         userRepo.lockById(currentUser.getId()).orElseThrow();
         BigDecimal balance = this.computeBalance(currentUser.getId());
-        if(balance.compareTo(sum) < 0) throw  new TransactionException( "Dein Kontostand ist zu gering um die Transaktionen auszuführen");
+        if(balance.compareTo(sum) < 0) throw new TransactionException( "Dein Kontostand ist zu gering um die Transaktionen auszuführen");
 
         balance = balance.subtract(sum);
         for (TransactionLite lite : transactionsLite) {

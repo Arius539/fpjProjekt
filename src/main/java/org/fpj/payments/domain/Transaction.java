@@ -86,11 +86,15 @@ public class Transaction {
     public String toString(){
         String string = "Transaktion{TransactionType= " + transactionType.toString() + ", Amount= " + amount.toString();
         if (transactionType == TransactionType.EINZAHLUNG){
-            string = string + ", Recipient= " + recipient.toString() + ", Descripion= " + description + ", CreatedAt= " + createdAt.toString();
+            string = string + ", Recipient= " + recipient.toString() + ", Descripion= " + description;
         } else if (transactionType == TransactionType.AUSZAHLUNG){
-            string = string + ", Sender= " + sender.toString() + ", Descripion= " + description + ", CreatedAt= " + createdAt.toString();
+            string = string + ", Sender= " + sender.toString() + ", Descripion= " + description;
         } else {
-            string = string + ", Sender= " + sender.toString() + ", Recipient= " + recipient.toString() + ", Descripion= " + description + ", CreatedAt= " + createdAt.toString();
+            string = string + ", Sender= " + sender.toString() + ", Recipient= " + recipient.toString() + ", Descripion= " + description;
+        }
+
+        if (null != createdAt){
+            string = string + ", CreatedAt= " + createdAt.toString();
         }
         return string;
     }
