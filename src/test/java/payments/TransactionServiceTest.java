@@ -62,6 +62,24 @@ public class TransactionServiceTest {
         assertEquals(expectedCurrentBalance, actual.newBalance());
     }
 
+    @Test
+    public void testSendTransfersPayout(){
+        when(sender.getId()).thenReturn(SENDER_ID);
+        when(userRepo.lockById(SENDER_ID)).thenReturn(Optional.of(sender));
+        when(txRepo.computeBalance(SENDER_ID)).thenReturn(BigDecimal.valueOf(200));
+        when(transactionLite.type()).thenReturn(TransactionType.AUSZAHLUNG);
+        when(transactionLite.amount()).thenReturn(AMOUNT);
+        when(transactionLite.description()).thenReturn(SUBJECT);
+
+        Transaction expectedTransaction = new Transaction(null, TransactionType.AUSZAHLUNG, AMOUNT, sender, null, SUBJECT, null);
+        BigDecimal expectedCurrentBalance = BigDecimal.valueOf(200).subtract(AMOUNT);
+
+        TransactionResult actual = underTest.sendTransfers(transactionLite, sender);
+
+        assertEquals(expectedTransaction, actual.transaction());
+        assertEquals(expectedCurrentBalance, actual.newBalance());
+    }
+
 
 
 
