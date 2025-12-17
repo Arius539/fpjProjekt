@@ -57,11 +57,6 @@ public class Transaction {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    public String amountString(long currentUserId) {
-        boolean outgoing = this.sender != null && this.sender.getId() == currentUserId;
-        return UiHelpers.formatSignedEuro(!outgoing ? this.amount : new BigDecimal("0").subtract(this.amount));
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
