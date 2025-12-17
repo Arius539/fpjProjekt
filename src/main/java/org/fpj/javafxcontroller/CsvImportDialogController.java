@@ -1,6 +1,5 @@
 package org.fpj.javafxcontroller;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -22,7 +21,6 @@ import org.fpj.exportimport.domain.CsvError;
 import org.fpj.exportimport.domain.CsvImportResult;
 import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.exportimport.application.FileHandling;
-import org.fpj.util.UiHelpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -80,7 +78,7 @@ public class CsvImportDialogController<E> {
     // </editor-fold>
 
     @FXML
-    private void onChooseFile(ActionEvent event) {
+    private void onChooseFile() {
         Window window = chooseFileButton.getScene().getWindow();
         String path = FileHandling.openFileChooserAndGetPath(window);
         if (path != null) {
@@ -90,7 +88,7 @@ public class CsvImportDialogController<E> {
     }
 
     @FXML
-    private void onStartImport(ActionEvent event) {
+    private void onStartImport() {
         errorList.clear();
 
         if (selectedFilePath == null) {

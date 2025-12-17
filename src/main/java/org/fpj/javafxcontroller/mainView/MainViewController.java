@@ -1,7 +1,6 @@
 package org.fpj.javafxcontroller.mainView;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import org.fpj.util.AlertService;
@@ -53,11 +52,6 @@ public class MainViewController {
             return;
         }
 
-        if (currentUser == null) {
-            alertService.error("Benutzer fehlt", "Es ist kein angemeldeter Benutzer vorhanden.");
-            return;
-        }
-
         lblEmail.setText(currentUser.getUsername());
         transactionsLiteController.initialize(currentUser, this::updateBalanceLabel);
         chatPreviewController.initialize(currentUser);
@@ -83,7 +77,7 @@ public class MainViewController {
     public void actionWallComments() {
         try{
            NavigationResponse<WallCommentViewController> response= viewNavigator.loadWallCommentView();
-           if(!response.isLoaded()) response.controller().load(currentUser, currentUser);;
+           if(!response.isLoaded()) response.controller().load(currentUser, currentUser);
         }catch (Exception e){
             this.alertService.error( "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
         }

@@ -25,8 +25,6 @@ public class UiHelpers {
 
     private static final NumberFormat EUR = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
-    private static final int MAX_LENGTH_EMAIL = 320;
-
     public static void isValidEmail(String email) {
         if (email == null) {
             throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht null sein.");
@@ -50,10 +48,7 @@ public class UiHelpers {
             return false;
         }
 
-        if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
-            return false;
-        }
-        return true;
+        return email.matches(LoginService.REGEX_USERNAME_VALIDATOR);
     }
 
     public static String usernameFromEmail(String email) {
@@ -70,7 +65,7 @@ public class UiHelpers {
         String[] lines = s.split("\\R");
         for (String line : lines) {
             if (!line.trim().isEmpty()) {
-                if (sb.length() > 0) sb.append(System.lineSeparator());
+                if (!sb.isEmpty()) sb.append(System.lineSeparator());
                 sb.append(line);
             }
         }
@@ -86,7 +81,7 @@ public class UiHelpers {
         for (String line : lines) {
             String trimmed = line.trim();
             if (!trimmed.isEmpty()) {
-                if (sb.length() > 0) sb.append(' ');  // statt lineSeparator
+                if (!sb.isEmpty()) sb.append(' ');  // statt lineSeparator
                 sb.append(trimmed);
             }
         }
@@ -160,6 +155,7 @@ public class UiHelpers {
             try {
                 return LocalDate.parse(text, formatter);
             } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");
             }
         }
         throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");

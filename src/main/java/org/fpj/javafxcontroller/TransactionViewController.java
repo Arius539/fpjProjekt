@@ -561,17 +561,17 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onReloadTransactions(ActionEvent event) {
+    private void onReloadTransactions() {
         reloadTransactionList();
     }
 
     @FXML
-    private void onReloadBatches(ActionEvent event) {
+    private void onReloadBatches() {
         updateBalances();
     }
 
     @FXML
-    private void onFilterChanged(ActionEvent event) {
+    private void onFilterChanged() {
         String selected = filterFieldComboBox.getValue();
         if (beforeActionComboBoxValue != null) {
             parseValuesFromSearchField(beforeActionComboBoxValue);
@@ -583,7 +583,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onClearFilter(ActionEvent event) {
+    private void onClearFilter() {
         filterTextField.setText("");
         filterFieldComboBox.getSelectionModel().clearSelection();
         TransactionViewSearchParameter searchParameter = this.searchParameter.copy();
@@ -593,7 +593,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onSearch(ActionEvent event) {
+    private void onSearch() {
         String selected = filterFieldComboBox.getValue();
         if (selected == null) {
             return;
@@ -603,7 +603,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onDeleteTransaction(ActionEvent event) {
+    private void onDeleteTransaction() {
         List<TransactionLite> selectedTransactions = new ArrayList<>(batchTransactionTable.getSelectionModel().getSelectedItems());
         if (selectedTransactions.isEmpty()) {
             return;
@@ -616,7 +616,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onExecuteSingleFromContext(ActionEvent event) {
+    private void onExecuteSingleFromContext() {
         List<TransactionLite> selectedTransactions = new ArrayList<>(batchTransactionTable.getSelectionModel().getSelectedItems());
         batchTransactionTable.getSelectionModel().clearSelection();
         ArrayList<TransactionResult> result = executeTransactionByList(selectedTransactions);
@@ -630,7 +630,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onTransactionTypeChanged(ActionEvent event) {
+    private void onTransactionTypeChanged() {
         applyTypeVisibility();
     }
 
@@ -665,13 +665,13 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onImportCsv(ActionEvent event) {
+    private void onImportCsv() {
         openCsvImportDialog();
         updateBalances();
     }
 
     @FXML
-    private void onExecuteSingle(ActionEvent event) {
+    private void onExecuteSingle() {
         TransactionLite transactionLite = transactionInfosToTransactionLite();
         if (transactionLite == null) {
             return;
@@ -684,7 +684,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onAddToBatch(ActionEvent event) {
+    private void onAddToBatch() {
         TransactionLite transactionLite = transactionInfosToTransactionLite();
         if (transactionLite == null) {
             return;
@@ -694,7 +694,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onExecuteAll(ActionEvent event) {
+    private void onExecuteAll() {
         ArrayList<TransactionResult> result = executeTransactionByList(batchTransactionList);
         if (!result.isEmpty()) {
             batchTransactionList.clear();

@@ -40,7 +40,6 @@ public class ChatPreviewController {
     private static final int PAGE_SIZE_CHAT_PREVIEWS = 20;
     private static final int PAGE_PRE_FETCH_THRESHOLD = 5;
 
-    private final ApplicationContext applicationContext;
     private final UserService userService;
     private final DirectMessageService directMessageService;
     private final AlertService alertService;
@@ -58,9 +57,8 @@ public class ChatPreviewController {
     private User currentUser;
 
     @Autowired
-    public ChatPreviewController(ApplicationContext applicationContext, UserService userService, DirectMessageService directMessageService, AlertService alertService, ViewNavigator viewNavigator) {
+    public ChatPreviewController(UserService userService, DirectMessageService directMessageService, AlertService alertService, ViewNavigator viewNavigator) {
         this.viewNavigator = viewNavigator;
-        this.applicationContext = applicationContext;
         this.userService = userService;
         this.directMessageService = directMessageService;
         this.alertService = alertService;
