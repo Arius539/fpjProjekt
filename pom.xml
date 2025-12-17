@@ -111,6 +111,7 @@
                 <configuration>
                     <source>23</source>
                     <target>23</target>
+                    <release>23</release>
 
                     <annotationProcessorPaths>
                         <path>

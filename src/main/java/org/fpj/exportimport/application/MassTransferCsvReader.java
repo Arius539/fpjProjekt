@@ -5,6 +5,7 @@ import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Setter;
+import lombok.extern.java.Log;
 import org.fpj.util.UiHelpers;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.domain.CsvError;
@@ -13,6 +14,8 @@ import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.payments.domain.MassTransfer;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +35,8 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 @Scope(SCOPE_PROTOTYPE)
 @Setter
 public class MassTransferCsvReader implements CsvReader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MassTransferCsvReader.class);
+
     UserService userService;
     private boolean isRunningB = false;
     User currentUser;
@@ -55,6 +60,7 @@ public class MassTransferCsvReader implements CsvReader {
 
             if (!Arrays.equals(actualHeaders, expectedHeaders)) {
                 String msg = "Unerwarteter Header. Erwartet: " + String.join(";", expectedHeaders) + " aber gefunden: " + String.join(";", actualHeaders != null ? actualHeaders : new String[0]);
+                LOGGER.error(msg);
                 CsvError fatal = new CsvError(line, null, null, null, msg, CsvError.Severity.FATAL);
                 return new CsvImportResult<>(List.of(), List.of(fatal), true);
             }
@@ -74,10 +80,14 @@ public class MassTransferCsvReader implements CsvReader {
             return new CsvImportResult<>(records, errors, fatal);
 
         } catch (TextParsingException tpe) {
-            CsvError fatalError = new CsvError(tpe.getLineIndex() + 1L, null, null, null, "CSV-Strukturfehler: " + tpe.getMessage(), CsvError.Severity.FATAL);
+            String message = "CSV-Strukturfehler: " + tpe.getMessage();
+            CsvError fatalError = new CsvError(tpe.getLineIndex() + 1L, null, null, null, message, CsvError.Severity.FATAL);
+            LOGGER.error(message);
             return new CsvImportResult<>(List.of(), List.of(fatalError), true);
         } catch (IOException ioe) {
-            CsvError fatalError = new CsvError(0, null, null, null, "CSV konnte nicht gelesen werden: " + ioe.getMessage(), CsvError.Severity.FATAL);
+            String message = "CSV konnte nicht gelesen werden: " + ioe.getMessage();
+            CsvError fatalError = new CsvError(0, null, null, null, message, CsvError.Severity.FATAL);
+            LOGGER.error(message);
             return new CsvImportResult<>(List.of(), List.of(fatalError), true);
         } finally {
             this.isRunningB = false;
