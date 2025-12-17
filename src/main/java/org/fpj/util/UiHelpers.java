@@ -2,6 +2,8 @@ package org.fpj.util;
 
 import javafx.concurrent.Task;
 import org.fpj.users.application.LoginService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,6 +17,8 @@ import java.util.Locale;
 
 public class UiHelpers {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UiHelpers.class);
+
     public static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
 
     public static final DateTimeFormatter INSTANT_FMT =
@@ -27,15 +31,21 @@ public class UiHelpers {
 
     public static void isValidEmail(String email) {
         if (email == null) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht null sein.");
+            String msg = "E-Mail bzw. der Benutzername darf nicht null sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (email.isBlank()) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht leer sein.");
+            String msg = "E-Mail bzw. der Benutzername darf nicht leer sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).");
+            String msg = "E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
     }
 

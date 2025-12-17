@@ -13,6 +13,8 @@ import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.payments.domain.MassTransfer;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +34,8 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 @Scope(SCOPE_PROTOTYPE)
 @Setter
 public class MassTransferCsvReader implements CsvReader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MassTransferCsvReader.class);
+
     UserService userService;
     private boolean isRunningB = false;
     User currentUser;
@@ -55,6 +59,7 @@ public class MassTransferCsvReader implements CsvReader {
 
             if (!Arrays.equals(actualHeaders, expectedHeaders)) {
                 String msg = "Unerwarteter Header. Erwartet: " + String.join(";", expectedHeaders) + " aber gefunden: " + String.join(";", actualHeaders != null ? actualHeaders : new String[0]);
+                LOGGER.error(msg);
                 CsvError fatal = new CsvError(line, null, null, null, msg, CsvError.Severity.FATAL);
                 return new CsvImportResult<>(List.of(), List.of(fatal), true);
             }
@@ -74,10 +79,14 @@ public class MassTransferCsvReader implements CsvReader {
             return new CsvImportResult<>(records, errors, fatal);
 
         } catch (TextParsingException tpe) {
-            CsvError fatalError = new CsvError(tpe.getLineIndex() + 1L, null, null, null, "CSV-Strukturfehler: " + tpe.getMessage(), CsvError.Severity.FATAL);
+            String message = "CSV-Strukturfehler: " + tpe.getMessage();
+            CsvError fatalError = new CsvError(tpe.getLineIndex() + 1L, null, null, null, message, CsvError.Severity.FATAL);
+            LOGGER.error(message);
             return new CsvImportResult<>(List.of(), List.of(fatalError), true);
         } catch (IOException ioe) {
-            CsvError fatalError = new CsvError(0, null, null, null, "CSV konnte nicht gelesen werden: " + ioe.getMessage(), CsvError.Severity.FATAL);
+            String message = "CSV konnte nicht gelesen werden: " + ioe.getMessage();
+            CsvError fatalError = new CsvError(0, null, null, null, message, CsvError.Severity.FATAL);
+            LOGGER.error(message);
             return new CsvImportResult<>(List.of(), List.of(fatalError), true);
         } finally {
             this.isRunningB = false;
@@ -110,7 +119,9 @@ public class MassTransferCsvReader implements CsvReader {
         BigDecimal betrag = parseBigDecimal(rawBetrag, "Betrag", line, errors);
 
         if (betrag != null && betrag.compareTo(BigDecimal.ZERO) <= 0) {
-            errors.add(new CsvError(line, "Betrag", null, rawBetrag, "Betrag muss größer als 0 sein", CsvError.Severity.ERROR));
+            String msg = "Betrag muss größer als 0 sein";
+            LOGGER.warn(msg);
+            errors.add(new CsvError(line, "Betrag", null, rawBetrag, msg, CsvError.Severity.ERROR));
         }
 
         return new MassTransfer(empfaenger, betrag, beschreibung);
@@ -126,7 +137,7 @@ public class MassTransferCsvReader implements CsvReader {
             if (this.currentUser.getUsername().equals(empfaenger)) {
                 throw new IllegalArgumentException("Du kannst keine Überweisungen an dich selbst tätigen");
             }
-            User user = userService.findByUsername(empfaenger);
+            userService.findByUsername(empfaenger);
         } catch (IllegalArgumentException | DataNotPresentException e) {
             errors.add(new CsvError(line, "Empfänger", null, empfaenger, e.getMessage(), CsvError.Severity.ERROR));
         }
