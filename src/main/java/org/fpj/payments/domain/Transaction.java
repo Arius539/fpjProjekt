@@ -56,4 +56,40 @@ public class Transaction {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Transaction transaction = (Transaction) obj;
+        boolean basic = transactionType.equals(transaction.getTransactionType()) && amount.equals(transaction.getAmount())
+                && description.equals(transaction.getDescription());
+        boolean equalUsers;
+        if (transactionType == TransactionType.EINZAHLUNG){
+            equalUsers = recipient.equals(transaction.recipient);
+        } else if (transactionType == TransactionType.AUSZAHLUNG){
+            equalUsers = sender.equals(transaction.sender);
+        } else {
+            equalUsers = recipient.equals(transaction.recipient) && sender.equals(transaction.sender);
+        }
+        return basic && equalUsers;
+    }
+
+    @Override
+    public String toString(){
+        String string = "Transaktion{TransactionType= " + transactionType.toString() + ", Amount= " + amount.toString();
+        if (transactionType == TransactionType.EINZAHLUNG){
+            string = string + ", Recipient= " + recipient.toString() + ", Descripion= " + description;
+        } else if (transactionType == TransactionType.AUSZAHLUNG){
+            string = string + ", Sender= " + sender.toString() + ", Descripion= " + description;
+        } else {
+            string = string + ", Sender= " + sender.toString() + ", Recipient= " + recipient.toString() + ", Descripion= " + description;
+        }
+
+        if (null != createdAt){
+            string = string + ", CreatedAt= " + createdAt;
+        }
+        return string;
+    }
+
 }
