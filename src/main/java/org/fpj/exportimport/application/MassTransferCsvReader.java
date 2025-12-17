@@ -5,7 +5,6 @@ import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Setter;
-import lombok.extern.java.Log;
 import org.fpj.util.UiHelpers;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.domain.CsvError;
@@ -138,7 +137,7 @@ public class MassTransferCsvReader implements CsvReader {
             if (this.currentUser.getUsername().equals(empfaenger)) {
                 throw new IllegalArgumentException("Du kannst keine Überweisungen an dich selbst tätigen");
             }
-            User user = userService.findByUsername(empfaenger);
+            userService.findByUsername(empfaenger);
         } catch (IllegalArgumentException | DataNotPresentException e) {
             errors.add(new CsvError(line, "Empfänger", null, empfaenger, e.getMessage(), CsvError.Severity.ERROR));
         }
