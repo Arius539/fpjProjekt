@@ -31,7 +31,6 @@ import org.fpj.payments.domain.TransactionViewSearchParameter;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -103,7 +102,7 @@ public class TransactionsLiteViewController {
                 PAGE_SIZE_LITE_LIST,
                 (pageIndex, pageSize) -> transactionService.findLiteItemsForUser(userId, pageIndex, pageSize),
                 page -> liteTransactionList.addAll(page.getContent()),
-                ex -> alertService.error("Fehler", null, "Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
+                ex -> alertService.error("Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "trx-page-loader-"
         );
 
@@ -241,11 +240,11 @@ public class TransactionsLiteViewController {
             tfEmpfaenger.clear();
             updateBalance();
         } catch (TransactionException | DataNotPresentException | NoSuchElementException ex) {
-            alertService.error("Fehler", "Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
+            alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            alertService.error("Fehler", "Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
+            alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
         } catch (Exception ex) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
         }
     }
 
@@ -274,7 +273,7 @@ public class TransactionsLiteViewController {
                     this::onTransactionDetailAmountClicked
             );
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu.");
+            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu.");
         }
     }
 
@@ -327,7 +326,7 @@ public class TransactionsLiteViewController {
             NavigationResponse<TransactionViewController> response= viewNavigator.loadTransactionView();
             response.controller().initialize(currentUser, transactionViewSearchParameter);
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden des Transaktionsfensters. Versuche es erneut oder starte die Anwendung neu.");
+            alertService.error( "Fenster konnte nicht geöffnet werden", "Fehler beim Laden des Transaktionsfensters. Versuche es erneut oder starte die Anwendung neu.");
         }
     }
 
