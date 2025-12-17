@@ -36,12 +36,6 @@ public class UiHelpers {
             throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht leer sein.");
         }
 
-        if (email.length() > MAX_LENGTH_EMAIL) {
-            throw new IllegalArgumentException(
-                    "E-Mail bzw. der Benutzername überschreitet die maximale Länge von " + MAX_LENGTH_EMAIL + " Zeichen."
-            );
-        }
-
         if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
             throw new IllegalArgumentException("E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).");
         }
@@ -54,10 +48,6 @@ public class UiHelpers {
 
         if (email.isBlank()) {
             return false;
-        }
-
-        if (email.length() > MAX_LENGTH_EMAIL) {
-           return false;
         }
 
         if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {

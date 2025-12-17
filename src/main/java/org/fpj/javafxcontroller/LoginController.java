@@ -79,7 +79,7 @@ public class LoginController {
             toggleLoginAndRegister();
         }
         catch (LoginFailedException e){
-            alertService.warn("Warnung", "Login fehlgeschlagen", e.getMessage());
+            alertService.warn("Login fehlgeschlagen", e.getMessage());
         }
     }
 
@@ -90,7 +90,7 @@ public class LoginController {
             viewNavigator.closeLogin();
         }
         catch (LoginFailedException e){
-            alertService.warn("Warnung", "Login fehlgeschlagen", e.getMessage());
+            alertService.warn("Login fehlgeschlagen", e.getMessage());
         }
         catch (IOException e){
             LOGGER.error("Fenster konnte nicht geladen werden", e);

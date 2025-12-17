@@ -162,7 +162,7 @@ public class WallCommentViewController {
                         GridPane.setValignment(card, VPos.TOP);
                     }
                 },
-                ex -> alertService.error("Fehler", null, "Pinnwand-Kommentare konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
+                ex -> alertService.error("Pinnwand-Kommentare konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "wall-comments-loader-"
         );
 
@@ -219,9 +219,9 @@ public class WallCommentViewController {
             newCommentTextArea.clear();
            if(!isGetByAuthor()) addComment(created);
         } catch (IllegalArgumentException e) {
-            alertService.error("Fehler", "Kommentar konnte nicht gespeichert werden", "Kommentar konnte nicht gespeichert werden: " + e.getMessage());
+            alertService.error("Kommentar konnte nicht gespeichert werden", "Kommentar konnte nicht gespeichert werden: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Es ist ein unerwarteter Fehler aufgetreten: Kommentar konnte nicht gespeichert werden: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Es ist ein unerwarteter Fehler aufgetreten: Kommentar konnte nicht gespeichert werden: " + e.getMessage());
         }
     }
 
@@ -233,7 +233,7 @@ public class WallCommentViewController {
     @FXML
     private void onExport() {
         if (currentUser == null || wallOwner == null) {
-            alertService.error("Fehler", "Export nicht möglich", "Benutzer oder Pinnwand-Besitzer ist nicht gesetzt.");
+            alertService.error("Export nicht möglich", "Benutzer oder Pinnwand-Besitzer ist nicht gesetzt.");
             return;
         }
 
@@ -256,11 +256,11 @@ public class WallCommentViewController {
                     : wallCommentService.toListByWallOwner(currentUser.getId());
 
             wallCommentCsvExporter.export(comments.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", null, "Der Export der Pinnwandkommentare war erfolgreich. Du findest die Einträge in: " + path);
+            alertService.info("Export erfolgreich", "Der Export der Pinnwandkommentare war erfolgreich. Du findest die Einträge in: " + path);
         } catch (IllegalArgumentException | IllegalStateException e) {
-            alertService.error("Fehler", "Export fehlgeschlagen", "Fehler beim Exportieren der Pinnwandkommentare: " + e.getMessage());
+            alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Pinnwandkommentare: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
         }
     }
 
@@ -280,9 +280,9 @@ public class WallCommentViewController {
             this.wallOwner = userService.findByUsername(username);
             reload();
         } catch (DataNotPresentException e) {
-            alertService.error("Fehler", "Pinnwand konnte nicht geladen werden", "Es ist ein Fehler beim Laden der Pinnwand aufgetreten, versuche es erneut oder starte die Anwendung neu.");
+            alertService.error("Pinnwand konnte nicht geladen werden", "Es ist ein Fehler beim Laden der Pinnwand aufgetreten, versuche es erneut oder starte die Anwendung neu.");
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Es ist ein unerwarteter Fehler beim Laden der Pinnwand aufgetreten, versuche es erneut oder starte die Anwendung neu.");
+            alertService.error("Unerwarteter Fehler", "Es ist ein unerwarteter Fehler beim Laden der Pinnwand aufgetreten, versuche es erneut oder starte die Anwendung neu.");
         }
     }
 

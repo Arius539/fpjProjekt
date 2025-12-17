@@ -94,17 +94,17 @@ public class CsvImportDialogController<E> {
         errorList.clear();
 
         if (selectedFilePath == null) {
-            alertService.error("Fehler", "Keine Datei ausgewählt", "Bitte zuerst eine CSV-Datei auswählen.");
+            alertService.error("Keine Datei ausgewählt", "Bitte zuerst eine CSV-Datei auswählen.");
             return;
         }
 
         if (csvReader == null || csvImportConsumer == null) {
-            alertService.error("Fehler", "Import nicht möglich", "Importer wurde nicht korrekt initialisiert.");
+            alertService.error("Import nicht möglich", "Importer wurde nicht korrekt initialisiert.");
             return;
         }
 
         if (csvReader.isRunning()) {
-            alertService.error("Fehler", "Import nicht möglich", "Importer läuft bereits, bitte warte auf die Verarbeitung");
+            alertService.error("Import nicht möglich", "Importer läuft bereits, bitte warte auf die Verarbeitung");
             return;
         }
 
@@ -120,7 +120,7 @@ public class CsvImportDialogController<E> {
         importTask.setOnSucceeded(event1 -> {
             CsvImportResult<E> result = importTask.getValue();
             if (result.getErrors().isEmpty()) {
-                alertService.info("Import erfolgreich", null, "Der CSV import war erfolgreich.");
+                alertService.info("Import erfolgreich", "Der CSV import war erfolgreich.");
                 csvImportConsumer.accept(result.getRecords());
                 this.viewNavigator.closeCsvDialog();
             } else {
@@ -130,7 +130,7 @@ public class CsvImportDialogController<E> {
 
         importTask.setOnFailed(event1 -> {
             Throwable ex = importTask.getException();
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
         });
 
         new Thread(importTask).start();

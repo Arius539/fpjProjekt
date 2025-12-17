@@ -72,7 +72,7 @@ public class ChatWindowController {
 
     public void openChat(User currentUser, User chatPartner) {
         if (currentUser == null || chatPartner == null) {
-            alertService.error("Fehler", "Chat kann nicht geöffnet werden", "Benutzer oder Chatpartner ist nicht gesetzt.");
+            alertService.error("Chat kann nicht geöffnet werden", "Benutzer oder Chatpartner ist nicht gesetzt.");
             return;
         }
 
@@ -115,7 +115,7 @@ public class ChatWindowController {
                         scrollToBottom();
                     }
                 },
-                ex -> alertService.error("Fehler", null, "Chat-Nachrichten konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
+                ex -> alertService.error("Chat-Nachrichten konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "chat-messages-loader-"
         );
 
@@ -138,7 +138,7 @@ public class ChatWindowController {
     @FXML
     private void send() {
         if (currentUser == null || currentChatPartner == null) {
-            alertService.error("Fehler", "Nachricht kann nicht gesendet werden", "Benutzer oder Chatpartner ist nicht gesetzt.");
+            alertService.error("Nachricht kann nicht gesendet werden", "Benutzer oder Chatpartner ist nicht gesetzt.");
             return;
         }
 
@@ -160,13 +160,13 @@ public class ChatWindowController {
     @FXML
     private void exportChat() {
         if (currentUser == null || currentChatPartner == null) {
-            alertService.error("Fehler", "Export nicht möglich", "Benutzer oder Chatpartner ist nicht gesetzt.");
+            alertService.error("Export nicht möglich", "Benutzer oder Chatpartner ist nicht gesetzt.");
             return;
         }
 
         try {
             if (directMessageCsvExporter.isRunning()) {
-                alertService.error("Fehler", null, "Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
+                alertService.error("Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
                 return;
             }
 
@@ -180,11 +180,11 @@ public class ChatWindowController {
             List<DirectMessage> messages = directMessageService.getConversationMessageList(this.currentUser.getId(), this.currentChatPartner.getId());
             directMessageCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
 
-            alertService.info("Export erfolgreich", null, "Der Export der Nachrichten war erfolgreich. Du findest die Einträge in: " + path);
+            alertService.info("Export erfolgreich","Der Export der Nachrichten war erfolgreich. Du findest die Einträge in: " + path);
         } catch (IllegalArgumentException e) {
-            alertService.error("Fehler", "Export fehlgeschlagen", "Fehler beim Exportieren der Nachrichten: " + e.getMessage());
+            alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Nachrichten: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
         }
     }
 

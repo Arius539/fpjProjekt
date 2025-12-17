@@ -124,7 +124,7 @@ public class TransactionViewController {
         this.searchParameter = searchParameter;
 
         if (this.currentUser == null) {
-            alertService.error("Fehler", "Benutzer nicht gesetzt", "Fehler beim Laden der nötigen Daten, bitte starte die Anwendung neu.");
+            alertService.error("Benutzer nicht gesetzt", "Fehler beim Laden der nötigen Daten, bitte starte die Anwendung neu.");
             return;
         }
 
@@ -161,7 +161,7 @@ public class TransactionViewController {
                     return  transactionService.searchTransactions(this.searchParameter, pageIndex, pageSize);
                 },
                 page -> transactionList.addAll(page.getContent()),
-                ex -> alertService.error("Fehler", null, "Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
+                ex -> alertService.error("Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "trx-page-loader-"
         );
 
@@ -319,9 +319,9 @@ public class TransactionViewController {
         try {
             return transactionService.sendBulkTransfers(transactions, currentUser);
         } catch (TransactionException | IllegalArgumentException e) {
-            alertService.error("Fehler", "Transaktion fehlgeschlagen", "Transaktionsfehler: " + e.getMessage());
+            alertService.error( "Transaktion fehlgeschlagen", "Transaktionsfehler: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + e.getMessage());
         }
         return new ArrayList<>();
     }
@@ -351,11 +351,11 @@ public class TransactionViewController {
 
             return transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
         } catch (TransactionException ex) {
-            alertService.error("Fehler", "Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
+            alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException | DataNotPresentException ex) {
-            alertService.error("Fehler", "Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
+            alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
         } catch (Exception ex) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
         }
         return null;
     }
@@ -417,7 +417,6 @@ public class TransactionViewController {
         } catch (Exception e) {
             if (text != null && !text.isBlank()) {
                 alertService.error(
-                        "Fehler",
                         "Filter ungültig",
                         "Es ist ein Fehler beim Lesen des Filterwertes aufgetreten: " + e.getMessage()
                 );
@@ -503,7 +502,7 @@ public class TransactionViewController {
             NavigationResponse<TransactionDetailController> response = viewNavigator.loadTransactionDetailView();
             response.controller().initialize(row, currentUser, this::onTransactionDetailSenderClicked, this::onTransactionDetailRecipientClicked, this::useTransactionAsTemplate, this::onTransactionDetailDescriptionClicked, this::onTransactionDetailAmountClicked);
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
+            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
     }
 
@@ -520,7 +519,7 @@ public class TransactionViewController {
             reader.setUserService(this.userService);
             dialogController.initialize(reader, this::addTransactionToBatch);
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
+            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
     }
 
@@ -638,30 +637,30 @@ public class TransactionViewController {
     @FXML
     private void exportTransactions() {
         if (currentUser == null) {
-            alertService.error("Fehler", "Export nicht möglich", "Benutzer ist nicht gesetzt.");
+            alertService.error("Export nicht möglich", "Benutzer ist nicht gesetzt.");
             return;
         }
 
         try {
             if (transactionCsvExporter.isRunning()) {
-                alertService.error("Fehler", null, "Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
+                alertService.error("Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
                 return;
             }
 
             Window window = importCsvButton.getScene().getWindow();
             String path = FileHandling.openFileChooserAndGetPath(window);
             if (path == null) {
-                alertService.error("Fehler", "Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
+                alertService.error("Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
                 return;
             }
 
             List<TransactionRow> messages = transactionService.transactionsForUserAsList(currentUser.getId());
             transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", null, "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
+            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
         } catch (IllegalArgumentException e) {
-            alertService.error("Fehler", "Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
+            alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
         }
     }
 
