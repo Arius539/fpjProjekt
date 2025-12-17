@@ -50,6 +50,9 @@ public class LoginServiceTest {
     private static String hashedPassword;
     private static final String REGEX_USERNAME_VALIDATOR =
             "^(?!.*\\.\\.)(?=.{8,255})[A-Za-z0-9_%.+-]{2,64}@[A-Za-z0-9.-]{2,}\\.[A-Za-z]{2,}$";
+    private static final String REGEX_PASSWORT_VALIDATOR =
+            "^(?=.{8,127}$)(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$";
+
 
     @BeforeAll
     public static void init(){
@@ -57,10 +60,9 @@ public class LoginServiceTest {
         hashedPassword = passwordEncoder.encode(RAW_PASSWORD);
     }
 
-    //TODO: gleiches für PasswortValidator
     @ParameterizedTest
     @MethodSource("provideUsernames")
-    public void testRegex(String username, boolean expected){
+    public void testRegexUsernames(String username, boolean expected){
         boolean valid = username.matches(REGEX_USERNAME_VALIDATOR);
         Assertions.assertEquals(expected, valid);
     }
@@ -78,6 +80,29 @@ public class LoginServiceTest {
                 Arguments.of("user@domain", false),
                 Arguments.of("ab@cd.ed", true),
                 Arguments.of("ab@c.de", false)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("providePasswords")
+    public void testRegexPassword(String password, boolean expected){
+        boolean valid = password.matches(REGEX_PASSWORT_VALIDATOR);
+        Assertions.assertEquals(expected, valid);
+    }
+
+    private static Stream<Arguments> providePasswords(){
+        return Stream.of(
+                Arguments.of(RAW_PASSWORD, true),
+                Arguments.of("12345678", false),
+                Arguments.of("password", false),
+                Arguments.of("password123", false),
+                Arguments.of("Password123!", true),
+                Arguments.of("I.C.Wiener2@gmail.com", true),
+                Arguments.of("qwerty12345", false),
+                Arguments.of("Qwerty12345$", true),
+                Arguments.of("abcdefg", false),
+                Arguments.of("Dongmaster420!", true),
+                Arguments.of("UserPassword", false)
         );
     }
 

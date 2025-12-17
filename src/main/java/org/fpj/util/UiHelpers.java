@@ -14,7 +14,17 @@ import java.time.format.DateTimeParseException;
 import java.util.Locale;
 
 public class UiHelpers {
+
+    public static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
+
+    public static final DateTimeFormatter INSTANT_FMT =
+            DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(LOCAL_ZONE);
+
+    public static final DateTimeFormatter DATE_FMT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(LOCAL_ZONE);
+
     private static final NumberFormat EUR = NumberFormat.getCurrencyInstance(Locale.GERMANY);
+
     private static final int MAX_LENGTH_EMAIL = 320;
 
     public static void isValidEmail(String email) {
@@ -150,7 +160,7 @@ public class UiHelpers {
 
         DateTimeFormatter[] formatters = new DateTimeFormatter[] {
                 DateTimeFormatter.ofPattern("dd.MM.yyyy"),
-                DateTimeFormatter.ISO_LOCAL_DATE,                // "yyyy-MM-dd"
+                DateTimeFormatter.ISO_LOCAL_DATE,
                 DateTimeFormatter.ofPattern("dd.MM.yy"),
                 DateTimeFormatter.ofPattern("d.M.yyyy"),
                 DateTimeFormatter.ofPattern("d.M.yy")
@@ -173,20 +183,14 @@ public class UiHelpers {
         if (t == null) {
             return "";
         }
-
-        DateTimeFormatter fmt = DateTimeFormatter
-                .ofPattern("dd.MM.yyyy HH:mm")
-                .withZone(ZoneId.of("Europe/Berlin"));
-
-        return fmt.format(t);
+        return INSTANT_FMT.format(t);
     }
 
     public static String formatInstantToDate(Instant instant) {
-        DateTimeFormatter dateFormatter = DateTimeFormatter
-                .ofPattern("yyyy-MM-dd")
-                .withZone(ZoneId.of("Europe/Berlin"));
-
-        return dateFormatter.format(instant);
+        if (instant == null) {
+            return "";
+        }
+        return DATE_FMT.format(instant);
     }
 
     public static void startBackgroundTask(Task<?> task, String threadName) {

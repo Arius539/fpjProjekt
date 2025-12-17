@@ -46,7 +46,6 @@ public class TransactionsLiteViewController {
     private static final int PAGE_SIZE_LITE_LIST = 100;
     private static final int PAGE_PRE_FETCH_THRESHOLD = 50;
 
-    private final ApplicationContext applicationContext;
     private final UserService userService;
     private final TransactionService transactionService;
     private final AlertService alertService;
@@ -80,9 +79,8 @@ public class TransactionsLiteViewController {
     private Consumer<String> balanceRefreshCallback;
 
     @Autowired
-    public TransactionsLiteViewController(ApplicationContext applicationContext, UserService userService, TransactionService transactionService, AlertService alertService, ViewNavigator navigator) {
+    public TransactionsLiteViewController(UserService userService, TransactionService transactionService, AlertService alertService, ViewNavigator navigator) {
         this.viewNavigator = navigator;
-        this.applicationContext = applicationContext;
         this.userService = userService;
         this.transactionService = transactionService;
         this.alertService = alertService;
@@ -142,7 +140,7 @@ public class TransactionsLiteViewController {
     }
 
     private String getCounterparty(TransactionRow item) {
-        boolean outgoing = item.senderId().equals(currentUser.getId());
+        boolean outgoing = item.isOutgoing(currentUser.getId());
 
         String name = outgoing
                 ? (item.recipientUsername() != null ? item.recipientUsername() : "Empfänger unbekannt")

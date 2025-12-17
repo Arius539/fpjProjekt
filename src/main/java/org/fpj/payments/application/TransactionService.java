@@ -110,7 +110,7 @@ public class TransactionService {
         BigDecimal amount = parseAmountTolerant(amountIn);
         String recipient = safe(recipientUsername);
         if (type == TransactionType.UEBERWEISUNG) {
-            if (recipient.equals(senderUsername)) throw new TransactionException("Der angegebene Empfänger existiert nicht.");
+            if (recipient.equals(senderUsername)) throw new TransactionException("Du kannst keine Überweisungen an dich selbst ausführen.");
             userService.findByUsername(recipient);
         } else if (type != AUSZAHLUNG && type != EINZAHLUNG){
             throw new IllegalStateException("Kein Transaktionstyp ausgewählt.");

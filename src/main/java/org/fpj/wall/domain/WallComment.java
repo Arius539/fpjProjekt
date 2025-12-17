@@ -6,7 +6,6 @@ import lombok.Setter;
 import org.fpj.users.domain.User;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Comment;
-import org.fpj.users.domain.User;
 
 import java.time.Instant;
 
@@ -31,11 +30,11 @@ public class WallComment {
     @JoinColumn(name = "wall_owner_id", nullable = false)
     private User wallOwner;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id")
     private User author;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @CreationTimestamp

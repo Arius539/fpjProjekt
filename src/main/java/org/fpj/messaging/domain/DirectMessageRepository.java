@@ -2,6 +2,7 @@ package org.fpj.messaging.domain;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -45,6 +46,7 @@ public interface DirectMessageRepository extends JpaRepository<DirectMessage, Lo
     @Query("SELECT d FROM DirectMessage d WHERE d.id = :id")
     Optional<DirectMessage> getDirectMessageById(@Param("id") Long id);
 
+    @EntityGraph(attributePaths = {"sender", "recipient"})
     @Query("""
         select dm
         from DirectMessage dm

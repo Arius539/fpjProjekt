@@ -33,7 +33,6 @@ import org.fpj.payments.domain.TransactionViewSearchParameter;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -101,6 +100,7 @@ public class TransactionViewController {
 
     private User currentUser;
     private TransactionViewSearchParameter searchParameter;
+    private TransactionViewSearchParameter searchParameterPerformedSearch;
 
     private final ObservableList<TransactionRow> transactionList = FXCollections.observableArrayList();
     private final ObservableList<TransactionLite> batchTransactionList = FXCollections.observableArrayList();
@@ -156,7 +156,10 @@ public class TransactionViewController {
     private void initPager() {
         this.transactionPager = new InfinitePager<>(
                 PAGE_SIZE_LIST,
-                (pageIndex, pageSize) -> transactionService.searchTransactions(this.searchParameter, pageIndex, pageSize),
+                (pageIndex, pageSize) ->{
+                    searchParameterPerformedSearch= this.searchParameter.copy();
+                    return  transactionService.searchTransactions(this.searchParameter, pageIndex, pageSize);
+                },
                 page -> transactionList.addAll(page.getContent()),
                 ex -> alertService.error("Fehler", null, "Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "trx-page-loader-"
@@ -377,62 +380,51 @@ public class TransactionViewController {
         applyTypeVisibility();
     }
 
-    private boolean parseValuesFromSearchField(String selected) {
+    private void parseValuesFromSearchField(String selected) {
+        String text = filterTextField.getText();
+
         try {
-            String text = filterTextField.getText();
             switch (selected) {
                 case "Verwendungszweck" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setDescription(null);
-                    } else {
-                        searchParameter.setDescription(text);
-                    }
+                    String value = (text == null || text.isBlank()) ? null : text;
+                    searchParameter.setDescription(value);
                 }
                 case "Empfänger, Sender" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setSenderRecipientUsername(null);
-                    } else {
-                        searchParameter.setSenderRecipientUsername(text);
-                    }
+                    String value = (text == null || text.isBlank()) ? null : text;
+                    searchParameter.setSenderRecipientUsername(value);
                 }
                 case "Created at von" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setCreatedFrom(null);
-                    } else {
-                        searchParameter.setCreatedFrom(UiHelpers.parseDateTolerant(text));
-                    }
+                    searchParameter.setCreatedFrom(UiHelpers.parseDateTolerant(text));
                 }
                 case "Created at bis" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setCreatedTo(null);
-                    } else {
-                        searchParameter.setCreatedTo(UiHelpers.parseDateTolerant(text));
-                    }
+                    searchParameter.setCreatedTo(UiHelpers.parseDateTolerant(text));
                 }
                 case "Betrag ab" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setAmountFrom(null);
-                    } else {
-                        searchParameter.setAmountFrom(UiHelpers.parseAmountTolerant(text).abs());
-                    }
+                    var value = (text == null || text.isBlank())
+                            ? null
+                            : UiHelpers.parseAmountTolerant(text).abs();
+                    searchParameter.setAmountFrom(value);
                 }
                 case "Betrag bis" -> {
-                    if (text == null || text.isBlank()) {
-                        searchParameter.setAmountTo(null);
-                    } else {
-                        searchParameter.setAmountTo(UiHelpers.parseAmountTolerant(text).abs());
-                    }
+                    var value = (text == null || text.isBlank())
+                            ? null
+                            : UiHelpers.parseAmountTolerant(text).abs();
+                    searchParameter.setAmountTo(value);
+                }
+                default -> {
                 }
             }
         } catch (Exception e) {
-            String text = filterTextField.getText();
             if (text != null && !text.isBlank()) {
-                alertService.error("Fehler", "Filter ungültig", "Es ist ein Fehler beim Lesen des Filterwertes aufgetreten: " + e.getMessage());
+                alertService.error(
+                        "Fehler",
+                        "Filter ungültig",
+                        "Es ist ein Fehler beim Lesen des Filterwertes aufgetreten: " + e.getMessage()
+                );
             }
-            return false;
         }
-        return true;
     }
+
 
     private String getTextValueSelectedFilter(String selected) {
         if (this.searchParameter == null) {
@@ -595,9 +587,10 @@ public class TransactionViewController {
     private void onClearFilter(ActionEvent event) {
         filterTextField.setText("");
         filterFieldComboBox.getSelectionModel().clearSelection();
+        TransactionViewSearchParameter searchParameter = this.searchParameter.copy();
         this.searchParameter = null;
         processSearchParameter();
-        reloadTransactionList();
+        if(!searchParameter.equals(this.searchParameter))  reloadTransactionList();
     }
 
     @FXML
@@ -606,9 +599,8 @@ public class TransactionViewController {
         if (selected == null) {
             return;
         }
-        if (parseValuesFromSearchField(selected)) {
-            reloadTransactionList();
-        }
+        parseValuesFromSearchField(selected);
+        if(!searchParameter.equals(this.searchParameterPerformedSearch)) reloadTransactionList();
     }
 
     @FXML
