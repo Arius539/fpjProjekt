@@ -60,7 +60,7 @@ public class Transaction {
     private Instant createdAt;
 
     public String amountString(long currentUserId) {
-        boolean outgoing = this.sender== null ? false : this.sender.getId() == currentUserId;
+        boolean outgoing = this.sender != null && this.sender.getId() == currentUserId;
         return UiHelpers.formatSignedEuro(!outgoing ? this.amount : new BigDecimal("0").subtract(this.amount));
     }
 
@@ -94,7 +94,7 @@ public class Transaction {
         }
 
         if (null != createdAt){
-            string = string + ", CreatedAt= " + createdAt.toString();
+            string = string + ", CreatedAt= " + createdAt;
         }
         return string;
     }
