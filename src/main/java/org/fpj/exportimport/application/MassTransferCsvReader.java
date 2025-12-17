@@ -120,7 +120,9 @@ public class MassTransferCsvReader implements CsvReader {
         BigDecimal betrag = parseBigDecimal(rawBetrag, "Betrag", line, errors);
 
         if (betrag != null && betrag.compareTo(BigDecimal.ZERO) <= 0) {
-            errors.add(new CsvError(line, "Betrag", null, rawBetrag, "Betrag muss größer als 0 sein", CsvError.Severity.ERROR));
+            String msg = "Betrag muss größer als 0 sein";
+            LOGGER.warn(msg);
+            errors.add(new CsvError(line, "Betrag", null, rawBetrag, msg, CsvError.Severity.ERROR));
         }
 
         return new MassTransfer(empfaenger, betrag, beschreibung);

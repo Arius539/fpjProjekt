@@ -31,18 +31,21 @@ public class UiHelpers {
 
     public static void isValidEmail(String email) {
         if (email == null) {
-            LOGGER.error("E-Mail bzw. der Benutzername darf nicht null sein.");
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht null sein.");
+            String msg = "E-Mail bzw. der Benutzername darf nicht null sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (email.isBlank()) {
-            LOGGER.error("E-Mail bzw. der Benutzername darf nicht leer sein.");
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht leer sein.");
+            String msg = "E-Mail bzw. der Benutzername darf nicht leer sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
-            LOGGER.error("E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).");
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).");
+            String msg = "E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
     }
 
