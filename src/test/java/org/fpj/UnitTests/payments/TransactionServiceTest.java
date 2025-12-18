@@ -152,7 +152,7 @@ public class TransactionServiceTest {
         when(recipient.getId()).thenReturn(RECIPIENT_ID);
 
         ArrayList<TransactionResult> results = underTest.sendBulkTransfers(transactionsLite, sender);
-        BigDecimal newBalance = results.get(0).newBalance();
+        BigDecimal newBalance = results.getFirst().newBalance();
         BigDecimal expected = BigDecimal.valueOf(80);
 
         assertEquals(expected, newBalance);
