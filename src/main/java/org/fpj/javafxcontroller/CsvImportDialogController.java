@@ -1,6 +1,5 @@
 package org.fpj.javafxcontroller;
 
-import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
@@ -22,9 +21,9 @@ import org.fpj.exportimport.domain.CsvError;
 import org.fpj.exportimport.domain.CsvImportResult;
 import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.exportimport.application.FileHandling;
-import org.fpj.util.UiHelpers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import javafx.util.Duration;
 
 import java.io.InputStream;
 import java.util.List;
@@ -159,7 +158,11 @@ public class CsvImportDialogController<E> {
 
                 HBox root = createErrorRowBox(titleText, subtitleText, rawDisplay, item.getSeverity());
                 setGraphic(root);
-                setTooltip(new Tooltip(buildTooltipText(item, severityText, raw)));
+                Tooltip t = new Tooltip(buildTooltipText(item, severityText, raw));
+                t.setShowDelay(Duration.ZERO);
+                t.setHideDelay(Duration.seconds(1));
+                t.setShowDuration(Duration.INDEFINITE);
+                setTooltip(t);
                 setStyle(backgroundStyle(item.getSeverity()));
             }
         });
