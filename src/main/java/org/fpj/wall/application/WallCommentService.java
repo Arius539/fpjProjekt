@@ -1,10 +1,8 @@
 package org.fpj.wall.application;
 
-import org.fpj.users.domain.User;
 import org.fpj.wall.domain.WallComment;
 import org.fpj.wall.domain.WallCommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -16,15 +14,6 @@ public class WallCommentService {
     @Autowired
     private WallCommentRepository wallCommentRepository;
 
-    private final WallCommentManagingService wallcommentManagingService;
-    private final ApplicationContext context;
-
-    @Autowired
-    public WallCommentService(WallCommentManagingService wallcommentManagingService,
-                              ApplicationContext context){
-        this.wallcommentManagingService = wallcommentManagingService;
-        this.context = context;
-    }
 
     public Page<WallComment> getWallCommentsByAuthor(long userId,PageRequest pageRequest){
         return wallCommentRepository.findByAuthor_IdOrderByCreatedAtDesc(userId,pageRequest);
@@ -49,15 +38,5 @@ public class WallCommentService {
 
     public List<WallComment> toListByWallOwner(Long ownerId) {
         return this.wallCommentRepository.toListByWallOwner(ownerId);
-    }
-
-    public Page<WallComment> seeMyPinwall(){
-        final User owner = (User) context.getBean("loggedInUser");
-        return seePinwall(owner);
-    }
-
-    public Page<WallComment> seePinwall(final User pinwallOwner){
-//        return wallcommentManagingService.getWallcommentsForOwner(pinwallOwner);
-        return null;
     }
 }

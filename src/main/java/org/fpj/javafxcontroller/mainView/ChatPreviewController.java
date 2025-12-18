@@ -40,7 +40,6 @@ public class ChatPreviewController {
     private static final int PAGE_SIZE_CHAT_PREVIEWS = 20;
     private static final int PAGE_PRE_FETCH_THRESHOLD = 5;
 
-    private final ApplicationContext applicationContext;
     private final UserService userService;
     private final DirectMessageService directMessageService;
     private final AlertService alertService;
@@ -58,9 +57,8 @@ public class ChatPreviewController {
     private User currentUser;
 
     @Autowired
-    public ChatPreviewController(ApplicationContext applicationContext, UserService userService, DirectMessageService directMessageService, AlertService alertService, ViewNavigator viewNavigator) {
+    public ChatPreviewController(UserService userService, DirectMessageService directMessageService, AlertService alertService, ViewNavigator viewNavigator) {
         this.viewNavigator = viewNavigator;
-        this.applicationContext = applicationContext;
         this.userService = userService;
         this.directMessageService = directMessageService;
         this.alertService = alertService;
@@ -81,7 +79,7 @@ public class ChatPreviewController {
         chatPreviewPager = new InfinitePager<>(PAGE_SIZE_CHAT_PREVIEWS, (pageIndex, pageSize) -> {
             PageRequest pageRequest = PageRequest.of(pageIndex, pageSize);
             return directMessageService.getChatPreviews(currentUser, pageRequest);
-        }, page -> chatPreviews.addAll(page.getContent()), ex -> alertService.error("Fehler", null, "Chat-Übersicht konnte nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")), "chat-preview-loader-");
+        }, page -> chatPreviews.addAll(page.getContent()), ex -> alertService.error("Chat-Übersicht konnte nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")), "chat-preview-loader-");
 
         chatPreviewPager.resetAndLoadFirstPage();
     }
@@ -196,9 +194,9 @@ public class ChatPreviewController {
             NavigationResponse<ChatWindowController> chatView = viewNavigator.loadChatView(username);
             if(!chatView.isLoaded()) chatView.controller().openChat(currentUser, chatPartner);
         } catch (IllegalArgumentException | DataNotPresentException ex) {
-            alertService.error("Fehler", "Fehler beim Laden des Chatfensters", ex.getMessage());
+            alertService.error("Fehler beim Laden des Chatfensters", ex.getMessage());
         } catch (Exception ex) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Es ist ein unerwarteter Fehler beim Laden des Chatfensters aufgetreten. Bitte versuche es später erneut.");
+            alertService.error( "Unerwarteter Fehler", "Es ist ein unerwarteter Fehler beim Laden des Chatfensters aufgetreten. Bitte versuche es später erneut.");
             System.out.println("Fehler beim Laden des Chatfensters"+ ex.getMessage());
             ex.printStackTrace();
         }

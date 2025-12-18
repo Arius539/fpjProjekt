@@ -49,6 +49,7 @@ public class DirectMessageService {
                 .toList();
         return new PageImpl<>(previews, pageable, contactsPage.getTotalElements());
     }
+
     public Page<DirectMessage> getConversation(User userA, User userB, Pageable pageable) {
       return  dmRepo.findConversation(userA.getId(), userB.getId(), pageable);
     }

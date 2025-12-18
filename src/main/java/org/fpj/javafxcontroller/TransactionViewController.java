@@ -124,7 +124,7 @@ public class TransactionViewController {
         this.searchParameter = searchParameter;
 
         if (this.currentUser == null) {
-            alertService.error("Fehler", "Benutzer nicht gesetzt", "Fehler beim Laden der nötigen Daten, bitte starte die Anwendung neu.");
+            alertService.error("Benutzer nicht gesetzt", "Fehler beim Laden der nötigen Daten, bitte starte die Anwendung neu.");
             return;
         }
 
@@ -161,7 +161,7 @@ public class TransactionViewController {
                     return  transactionService.searchTransactions(this.searchParameter, pageIndex, pageSize);
                 },
                 page -> transactionList.addAll(page.getContent()),
-                ex -> alertService.error("Fehler", null, "Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
+                ex -> alertService.error("Transaktionen konnten nicht geladen werden: " + (ex != null ? ex.getMessage() : "Unbekannter Fehler")),
                 "trx-page-loader-"
         );
 
@@ -319,9 +319,9 @@ public class TransactionViewController {
         try {
             return transactionService.sendBulkTransfers(transactions, currentUser);
         } catch (TransactionException | IllegalArgumentException e) {
-            alertService.error("Fehler", "Transaktion fehlgeschlagen", "Transaktionsfehler: " + e.getMessage());
+            alertService.error( "Transaktion fehlgeschlagen", "Transaktionsfehler: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + e.getMessage());
         }
         return new ArrayList<>();
     }
@@ -351,11 +351,11 @@ public class TransactionViewController {
 
             return transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
         } catch (TransactionException ex) {
-            alertService.error("Fehler", "Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
+            alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException | DataNotPresentException ex) {
-            alertService.error("Fehler", "Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
+            alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
         } catch (Exception ex) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
+            alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
         }
         return null;
     }
@@ -417,7 +417,6 @@ public class TransactionViewController {
         } catch (Exception e) {
             if (text != null && !text.isBlank()) {
                 alertService.error(
-                        "Fehler",
                         "Filter ungültig",
                         "Es ist ein Fehler beim Lesen des Filterwertes aufgetreten: " + e.getMessage()
                 );
@@ -503,7 +502,7 @@ public class TransactionViewController {
             NavigationResponse<TransactionDetailController> response = viewNavigator.loadTransactionDetailView();
             response.controller().initialize(row, currentUser, this::onTransactionDetailSenderClicked, this::onTransactionDetailRecipientClicked, this::useTransactionAsTemplate, this::onTransactionDetailDescriptionClicked, this::onTransactionDetailAmountClicked);
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
+            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
     }
 
@@ -520,7 +519,7 @@ public class TransactionViewController {
             reader.setUserService(this.userService);
             dialogController.initialize(reader, this::addTransactionToBatch);
         } catch (Exception e) {
-            alertService.error("Fehler", "Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
+            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
     }
 
@@ -562,17 +561,17 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onReloadTransactions(ActionEvent event) {
+    private void onReloadTransactions() {
         reloadTransactionList();
     }
 
     @FXML
-    private void onReloadBatches(ActionEvent event) {
+    private void onReloadBatches() {
         updateBalances();
     }
 
     @FXML
-    private void onFilterChanged(ActionEvent event) {
+    private void onFilterChanged() {
         String selected = filterFieldComboBox.getValue();
         if (beforeActionComboBoxValue != null) {
             parseValuesFromSearchField(beforeActionComboBoxValue);
@@ -584,7 +583,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onClearFilter(ActionEvent event) {
+    private void onClearFilter() {
         filterTextField.setText("");
         filterFieldComboBox.getSelectionModel().clearSelection();
         TransactionViewSearchParameter searchParameter = this.searchParameter.copy();
@@ -594,7 +593,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onSearch(ActionEvent event) {
+    private void onSearch() {
         String selected = filterFieldComboBox.getValue();
         if (selected == null) {
             return;
@@ -604,7 +603,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onDeleteTransaction(ActionEvent event) {
+    private void onDeleteTransaction() {
         List<TransactionLite> selectedTransactions = new ArrayList<>(batchTransactionTable.getSelectionModel().getSelectedItems());
         if (selectedTransactions.isEmpty()) {
             return;
@@ -617,7 +616,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onExecuteSingleFromContext(ActionEvent event) {
+    private void onExecuteSingleFromContext() {
         List<TransactionLite> selectedTransactions = new ArrayList<>(batchTransactionTable.getSelectionModel().getSelectedItems());
         batchTransactionTable.getSelectionModel().clearSelection();
         ArrayList<TransactionResult> result = executeTransactionByList(selectedTransactions);
@@ -631,48 +630,48 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onTransactionTypeChanged(ActionEvent event) {
+    private void onTransactionTypeChanged() {
         applyTypeVisibility();
     }
 
     @FXML
     private void exportTransactions() {
         if (currentUser == null) {
-            alertService.error("Fehler", "Export nicht möglich", "Benutzer ist nicht gesetzt.");
+            alertService.error("Export nicht möglich", "Benutzer ist nicht gesetzt.");
             return;
         }
 
         try {
             if (transactionCsvExporter.isRunning()) {
-                alertService.error("Fehler", null, "Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
+                alertService.error("Eine andere Export-Instanz läuft noch. Warte bitte, bis diese abgeschlossen ist.");
                 return;
             }
 
             Window window = importCsvButton.getScene().getWindow();
             String path = FileHandling.openFileChooserAndGetPath(window);
             if (path == null) {
-                alertService.error("Fehler", "Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
+                alertService.error("Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
                 return;
             }
 
             List<TransactionRow> messages = transactionService.transactionsForUserAsList(currentUser.getId());
             transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", null, "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
+            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
         } catch (IllegalArgumentException e) {
-            alertService.error("Fehler", "Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
+            alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
         } catch (Exception e) {
-            alertService.error("Fehler", "Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
+            alertService.error("Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
         }
     }
 
     @FXML
-    private void onImportCsv(ActionEvent event) {
+    private void onImportCsv() {
         openCsvImportDialog();
         updateBalances();
     }
 
     @FXML
-    private void onExecuteSingle(ActionEvent event) {
+    private void onExecuteSingle() {
         TransactionLite transactionLite = transactionInfosToTransactionLite();
         if (transactionLite == null) {
             return;
@@ -685,7 +684,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onAddToBatch(ActionEvent event) {
+    private void onAddToBatch() {
         TransactionLite transactionLite = transactionInfosToTransactionLite();
         if (transactionLite == null) {
             return;
@@ -695,7 +694,7 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onExecuteAll(ActionEvent event) {
+    private void onExecuteAll() {
         ArrayList<TransactionResult> result = executeTransactionByList(batchTransactionList);
         if (!result.isEmpty()) {
             batchTransactionList.clear();

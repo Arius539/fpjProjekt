@@ -1,7 +1,6 @@
 package org.fpj.javafxcontroller.mainView;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import org.fpj.util.AlertService;
@@ -49,12 +48,7 @@ public class MainViewController {
         try {
             currentUser = applicationContext.getBean("loggedInUser", User.class);
         } catch (Exception e) {
-            alertService.error("Fehler", "Benutzer konnte nicht geladen werden", "Der angemeldete Benutzer konnte nicht aus dem Kontext geladen werden.");
-            return;
-        }
-
-        if (currentUser == null) {
-            alertService.error("Fehler", "Benutzer fehlt", "Es ist kein angemeldeter Benutzer vorhanden.");
+            alertService.error("Benutzer konnte nicht geladen werden", "Der angemeldete Benutzer konnte nicht aus dem Kontext geladen werden.");
             return;
         }
 
@@ -74,7 +68,7 @@ public class MainViewController {
             NavigationResponse<TransactionViewController> response= viewNavigator.loadTransactionView();
             if(!response.isLoaded()) response.controller().initialize(currentUser, null);
         }catch (Exception e){
-            this.alertService.error("Fehler", "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
+            this.alertService.error("Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
         }
 
     }
@@ -83,9 +77,9 @@ public class MainViewController {
     public void actionWallComments() {
         try{
            NavigationResponse<WallCommentViewController> response= viewNavigator.loadWallCommentView();
-           if(!response.isLoaded()) response.controller().load(currentUser, currentUser);;
+           if(!response.isLoaded()) response.controller().load(currentUser, currentUser);
         }catch (Exception e){
-            this.alertService.error("Fehler", "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
+            this.alertService.error( "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
         }
     }
 

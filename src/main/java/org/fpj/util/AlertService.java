@@ -17,6 +17,14 @@ public class AlertService {
         });
     }
 
+    public void info(String title, String message){
+        info(title, null, message);
+    }
+
+    public void info(String message){
+        info(null, null, message);
+    }
+
     public void warn(String title, String header, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -27,6 +35,14 @@ public class AlertService {
         });
     }
 
+    public void warn(String header, String message){
+        warn("Warnung", header, message);
+    }
+
+    public void warn(String message){
+        warn("Warnung", null, message);
+    }
+
     public void error(String title, String header, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -35,5 +51,13 @@ public class AlertService {
             alert.setContentText(message);
             alert.showAndWait();
         });
+    }
+
+    public void error(String header, String message){
+        error("Fehler", header, message);
+    }
+
+    public void error(String message){
+        error("Fehler", null, message);
     }
 }

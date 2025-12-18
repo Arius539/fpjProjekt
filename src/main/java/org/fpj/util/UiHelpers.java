@@ -2,6 +2,8 @@ package org.fpj.util;
 
 import javafx.concurrent.Task;
 import org.fpj.users.application.LoginService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -15,6 +17,8 @@ import java.util.Locale;
 
 public class UiHelpers {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(UiHelpers.class);
+
     public static final ZoneId LOCAL_ZONE = ZoneId.systemDefault();
 
     public static final DateTimeFormatter INSTANT_FMT =
@@ -25,25 +29,23 @@ public class UiHelpers {
 
     private static final NumberFormat EUR = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
-    private static final int MAX_LENGTH_EMAIL = 320;
-
     public static void isValidEmail(String email) {
         if (email == null) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht null sein.");
+            String msg = "E-Mail bzw. der Benutzername darf nicht null sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (email.isBlank()) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername darf nicht leer sein.");
-        }
-
-        if (email.length() > MAX_LENGTH_EMAIL) {
-            throw new IllegalArgumentException(
-                    "E-Mail bzw. der Benutzername überschreitet die maximale Länge von " + MAX_LENGTH_EMAIL + " Zeichen."
-            );
+            String msg = "E-Mail bzw. der Benutzername darf nicht leer sein.";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
 
         if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
-            throw new IllegalArgumentException("E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).");
+            String msg = "E-Mail bzw. der Benutzername hat kein gültiges Format (z.B. firstname.lastname@domain.de).";
+            LOGGER.warn(msg);
+            throw new IllegalArgumentException(msg);
         }
     }
 
@@ -56,14 +58,7 @@ public class UiHelpers {
             return false;
         }
 
-        if (email.length() > MAX_LENGTH_EMAIL) {
-           return false;
-        }
-
-        if (!email.matches(LoginService.REGEX_USERNAME_VALIDATOR)) {
-            return false;
-        }
-        return true;
+        return email.matches(LoginService.REGEX_USERNAME_VALIDATOR);
     }
 
     public static String usernameFromEmail(String email) {
@@ -80,7 +75,7 @@ public class UiHelpers {
         String[] lines = s.split("\\R");
         for (String line : lines) {
             if (!line.trim().isEmpty()) {
-                if (sb.length() > 0) sb.append(System.lineSeparator());
+                if (!sb.isEmpty()) sb.append(System.lineSeparator());
                 sb.append(line);
             }
         }
@@ -96,7 +91,7 @@ public class UiHelpers {
         for (String line : lines) {
             String trimmed = line.trim();
             if (!trimmed.isEmpty()) {
-                if (sb.length() > 0) sb.append(' ');  // statt lineSeparator
+                if (!sb.isEmpty()) sb.append(' ');  // statt lineSeparator
                 sb.append(trimmed);
             }
         }
@@ -170,6 +165,7 @@ public class UiHelpers {
             try {
                 return LocalDate.parse(text, formatter);
             } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");
             }
         }
         throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");
