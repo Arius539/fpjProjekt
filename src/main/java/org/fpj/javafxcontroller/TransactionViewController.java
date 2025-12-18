@@ -35,6 +35,7 @@ import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
@@ -648,15 +649,18 @@ public class TransactionViewController {
             }
 
             Window window = importCsvButton.getScene().getWindow();
-            String path = FileHandling.openFileChooserAndGetPath(window);
+
+            String fileName ="TransaktionenExport_" +this.currentUser.getUsername()+ ".csv";
+
+            String path = FileHandling.openDirectoryChooserAndGetPath(window);
             if (path == null) {
-                alertService.error("Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
-                return;
+                throw new IllegalStateException("Das Auswählen des Dateipfades ist fehlgeschlagen.");
             }
+            File file = FileHandling.createFileVersioned(path, fileName);
 
             List<TransactionRow> messages = transactionService.transactionsForUserAsList(currentUser.getId());
-            transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
+            transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(file.getAbsolutePath()));
+            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + file.getAbsolutePath());
         } catch (IllegalArgumentException e) {
             alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
         } catch (Exception e) {
