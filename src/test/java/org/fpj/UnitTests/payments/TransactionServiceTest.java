@@ -138,6 +138,18 @@ public class TransactionServiceTest {
     }
 
     @Test
+    public void testTransferSameSenderAndRecipient(){
+        TransactionLite transactionLite = new TransactionLite(AMOUNT, TransactionType.UEBERWEISUNG, SENDER_USERNAME, SENDER_USERNAME, SUBJECT);
+
+        when(sender.getId()).thenReturn(SENDER_ID);
+        when(userRepo.lockById(SENDER_ID)).thenReturn(Optional.of(sender));
+        when(txRepo.computeBalance(SENDER_ID)).thenReturn(BigDecimal.valueOf(STANDARD_BALANCE));
+        when(userService.findByUsername(SENDER_USERNAME)).thenReturn(sender);
+
+        assertThrows(TransactionException.class, () -> underTest.sendTransfers(transactionLite, sender));
+    }
+
+    @Test
     public void testSendBulkTransfers(){
         TransactionLite payin = new TransactionLite(BigDecimal.valueOf(100), TransactionType.EINZAHLUNG, null, SENDER_USERNAME, SUBJECT);
         TransactionLite payout = new TransactionLite(BigDecimal.valueOf(20), TransactionType.AUSZAHLUNG, SENDER_USERNAME, null, SUBJECT);
@@ -172,6 +184,5 @@ public class TransactionServiceTest {
 
         assertThrows(TransactionException.class, () -> underTest.sendBulkTransfers(transactionsLite, sender));
     }
-
 
 }
