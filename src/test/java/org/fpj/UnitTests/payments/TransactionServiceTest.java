@@ -1,4 +1,4 @@
-package payments;
+package org.fpj.UnitTests.payments;
 
 import org.fpj.exceptions.TransactionException;
 import org.fpj.payments.application.TransactionService;

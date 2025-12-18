@@ -1,4 +1,4 @@
-package messaging;
+package org.fpj.UnitTests.messaging;
 
 import org.fpj.messaging.application.DirectMessageService;
 import org.fpj.messaging.domain.ChatPreview;
