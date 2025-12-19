@@ -28,7 +28,7 @@ public record TransactionLite(
     }
 
     public String amountString(String currentUsername) {
-        boolean outgoing = this.senderUsername() ==null? false : this.senderUsername() == currentUsername;
+        boolean outgoing = this.senderUsername() != null && this.senderUsername().equals(currentUsername);
         return UiHelpers.formatSignedEuro(!outgoing ? this.amount():new BigDecimal("0").subtract(this.amount()));
     }
 
