@@ -2,10 +2,7 @@ package org.fpj.DBTests.payments;
 
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.payments.application.TransactionService;
-import org.fpj.payments.domain.TransactionLite;
-import org.fpj.payments.domain.TransactionRepository;
-import org.fpj.payments.domain.TransactionRow;
-import org.fpj.payments.domain.TransactionType;
+import org.fpj.payments.domain.*;
 import org.fpj.users.domain.User;
 import org.fpj.users.domain.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +18,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -171,6 +171,66 @@ public class TransactionTest {
         assertEquals(TransactionType.UEBERWEISUNG, type);
         assertEquals(userId1, senderId);
         assertEquals(userId2, recipientId);
+    }
+
+    @Test
+    public void testTransactionsForUserAsList(){
+        BigDecimal amount1 = BigDecimal.valueOf(30);
+        BigDecimal amount2 = BigDecimal.valueOf(40);
+        TransactionLite transactionLite1 = new TransactionLite(amount1, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite2 = new TransactionLite(amount2, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite3 = new TransactionLite(amount1, TransactionType.UEBERWEISUNG, USERNAME1, USERNAME2, SUBJECT);
+
+        transactionService.sendTransfers(transactionLite1, currentUser);
+        transactionService.sendTransfers(transactionLite2, currentUser);
+        transactionService.sendTransfers(transactionLite3, currentUser);
+
+        List<TransactionRow> transactionRowList = transactionService.transactionsForUserAsList(userId1);
+        int elements = transactionRowList.size();
+
+        //werden absteigend nach Datum zurückgegeben
+        BigDecimal amount = transactionRowList.getFirst().amount();
+        TransactionType type = transactionRowList.getFirst().type();
+        Long senderId = transactionRowList.getFirst().senderId();
+        Long recipientId = transactionRowList.getFirst().recipientId();
+
+        assertEquals(3, elements);
+        assertEquals(0, amount.compareTo(amount1));
+        assertEquals(TransactionType.UEBERWEISUNG, type);
+        assertEquals(userId1, senderId);
+        assertEquals(userId2, recipientId);
+    }
+
+    @Test
+    public void testSearchTransactions(){
+        BigDecimal amount1 = BigDecimal.valueOf(30);
+        BigDecimal amount2 = BigDecimal.valueOf(40);
+        TransactionLite transactionLite1 = new TransactionLite(amount1, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite2 = new TransactionLite(amount2, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite3 = new TransactionLite(amount1, TransactionType.UEBERWEISUNG, USERNAME1, USERNAME2, SUBJECT);
+        TransactionLite transactionLite4 = new TransactionLite(amount2, TransactionType.UEBERWEISUNG, USERNAME1, USERNAME2, SUBJECT);
+
+        transactionService.sendTransfers(transactionLite1, currentUser);
+        transactionService.sendTransfers(transactionLite2, currentUser);
+        transactionService.sendTransfers(transactionLite3, currentUser);
+        transactionService.sendTransfers(transactionLite4, currentUser);
+
+        LocalDateTime localDateTime = LocalDateTime.of(2025, 12, 11, 13, 30);
+        ZoneId zone = ZoneId.of("Europe/Berlin");
+        Instant from = localDateTime.atZone(zone).toInstant();
+
+        TransactionViewSearchParameter parameter = new TransactionViewSearchParameter(userId1, null, from, null, USERNAME1, BigDecimal.valueOf(35), BigDecimal.valueOf(60));
+        Page<TransactionRow> transactionRows = transactionService.searchTransactions(parameter, 0, 1);
+        TransactionRow transactionRow = transactionRows.getContent().getFirst();
+        long size = transactionRows.getTotalElements();
+        long senderId = transactionRow.senderId();
+        long recipientId = transactionRow.recipientId();
+        BigDecimal amount = transactionRow.amount();
+
+        assertEquals(3, size);
+        assertEquals(userId1, senderId);
+        assertEquals(userId2, recipientId);
+        assertEquals(amount2, amount);
     }
 
 }
