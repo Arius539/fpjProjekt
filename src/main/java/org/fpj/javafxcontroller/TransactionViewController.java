@@ -2,7 +2,6 @@ package org.fpj.javafxcontroller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.SelectionMode;
@@ -13,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
+import org.fpj.exceptions.UserInputNormalizationException;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
@@ -41,6 +41,8 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.fpj.util.UiHelpers.parseAmountTolerant;
 
 @Component
 public class TransactionViewController {
@@ -292,11 +294,11 @@ public class TransactionViewController {
 
     private void updateCurrentBalanceLabel() {
         BigDecimal balance = transactionService.computeBalance(currentUser.getId());
-        currentBalanceLabel.setText(UiHelpers.formatEuro(balance));
+        currentBalanceLabel.setText(UiHelpers.formatUnsignedEuro(balance));
     }
 
     private void updateSelectedBalanceLabel(BigDecimal amount) {
-        selectedTransactionBalanceLabel.setText(UiHelpers.formatEuro(amount));
+        selectedTransactionBalanceLabel.setText(UiHelpers.formatUnsignedEuro(amount));
     }
 
     private BigDecimal getBalanceAfterListOfItems(List<TransactionLite> transactions) {
@@ -332,10 +334,11 @@ public class TransactionViewController {
             String amount = amountField.getText();
             String subjectRaw = purposeField.getText();
             String subject = subjectRaw == null ? "" : UiHelpers.truncate(subjectRaw, subjectRaw.length());
-            String recipient = receiverUsernameField.getText();
+            String recipient =UiHelpers.safe(receiverUsernameField.getText());
+            BigDecimal amountNum = parseAmountTolerant(amount);
+
             String sender = null;
             TransactionType type;
-
             if (depositRadio.isSelected()) {
                 recipient = currentUser.getUsername();
                 type = TransactionType.EINZAHLUNG;
@@ -349,9 +352,13 @@ public class TransactionViewController {
             } else {
                 throw new IllegalStateException("Kein Transaktionstyp ausgewählt.");
             }
-
-            return transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
-        } catch (TransactionException ex) {
+            amountField.setText(UiHelpers.formatUnsignedEuro(amountNum));
+            if(!UiHelpers.amountCheck(amount,amountNum ) )throw new UserInputNormalizationException("Wir konnten den Betrag nicht eindeutig lesen bestätige deine Eingabe");
+            return transactionService.transactionInfosToTransactionLite(amountNum, sender, recipient, subject, type);
+        } catch (UserInputNormalizationException ex) {
+            alertService.error("Überprüfe deine Eingabe", ex.getMessage());
+        }
+        catch (TransactionException ex) {
             alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException | DataNotPresentException ex) {
             alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());

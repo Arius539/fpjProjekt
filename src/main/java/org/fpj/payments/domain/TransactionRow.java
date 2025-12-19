@@ -21,7 +21,7 @@ public record TransactionRow(
     }
 
     public String amountStringUnsigned() {
-        return UiHelpers.formatEuro( this.amount());
+        return UiHelpers.formatUnsignedEuro( this.amount());
     }
 
     public boolean isOutgoing(long currentUserId){

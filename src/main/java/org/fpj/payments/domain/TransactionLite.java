@@ -23,7 +23,7 @@ public record TransactionLite(
     }
 
     public String amountStringUnsigned() {
-        return UiHelpers.formatEuro( this.amount());
+        return UiHelpers.formatUnsignedEuro( this.amount());
     }
 
     public static TransactionLite fromTransactionRow(TransactionRow row){

@@ -39,6 +39,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
+import static org.fpj.util.UiHelpers.parseAmountTolerant;
+
 @Component
 public class TransactionsLiteViewController {
 
@@ -185,7 +187,7 @@ public class TransactionsLiteViewController {
 
     private void updateBalance() {
         BigDecimal balance = transactionService.computeBalance(this.currentUser.getId());
-        this.balanceRefreshCallback.accept(UiHelpers.formatEuro(balance));
+        this.balanceRefreshCallback.accept(UiHelpers.formatUnsignedEuro(balance));
     }
 
     @FXML
@@ -207,7 +209,8 @@ public class TransactionsLiteViewController {
             String amount = tfBetrag.getText();
             String subjectRaw = tfBetreff.getText();
             String subject = subjectRaw == null ? "" : subjectRaw.trim();
-            String recipient = tfEmpfaenger.getText();
+            String recipient =UiHelpers.safe(tfEmpfaenger.getText());
+            BigDecimal amountNum = parseAmountTolerant(amount);
 
             String sender;
             TransactionType type;
@@ -228,9 +231,9 @@ public class TransactionsLiteViewController {
                 throw new IllegalStateException("Kein Transaktionstyp ausgewählt.");
             }
 
-            TransactionLite transactionLite = transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
+            TransactionLite transactionLite = transactionService.transactionInfosToTransactionLite(amountNum, sender, recipient, subject, type);
             TransactionResult result = transactionService.sendTransfers(transactionLite, this.currentUser);
-            this.balanceRefreshCallback.accept(UiHelpers.formatEuro(result.newBalance()));
+            this.balanceRefreshCallback.accept(UiHelpers.formatUnsignedEuro(result.newBalance()));
 
             TransactionRow row = TransactionRow.fromTransaction(result.transaction());
             addLiteTransaction(row);

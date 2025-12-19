@@ -46,6 +46,7 @@ public class TransactionService {
     }
 
     private Transaction deposit(User user, BigDecimal amount, String subject) {
+        requirePositive(amount, "Der Betrag muss größer als 0 sein.");
         Transaction tx = new Transaction();
         tx.setTransactionType(EINZAHLUNG);
         tx.setRecipient(user);
@@ -57,6 +58,7 @@ public class TransactionService {
     }
 
     private Transaction withdraw(User user, BigDecimal amount, String subject) {
+        requirePositive(amount, "Der Betrag muss größer als 0 sein.");
         Transaction tx = new Transaction();
         tx.setTransactionType(AUSZAHLUNG);
         tx.setSender(user);
@@ -106,8 +108,8 @@ public class TransactionService {
         );
     }
 
-    public TransactionLite transactionInfosToTransactionLite(String amountIn, String senderUsername, String recipientUsername, String description, TransactionType type) {
-        BigDecimal amount = parseAmountTolerant(amountIn);
+    public TransactionLite transactionInfosToTransactionLite(BigDecimal amount, String senderUsername, String recipientUsername, String description, TransactionType type) {
+        requirePositive(amount, "Der Betrag muss größer als 0 sein.");
         String recipient = safe(recipientUsername);
         if (type == TransactionType.UEBERWEISUNG) {
             if (recipient.equals(senderUsername)) throw new TransactionException("Du kannst keine Überweisungen an dich selbst ausführen.");

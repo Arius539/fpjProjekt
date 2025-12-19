@@ -100,22 +100,46 @@ public class UiHelpers {
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
 
+    public static boolean amountCheck(String amountIn, BigDecimal amountOut) {
+        if(amountIn.equals(formatBigDecimal(amountOut))) return true;
+        if(amountIn.equals(formatBigDecimalComma(amountOut))) return true;
+        if(amountIn.equals(formatUnsignedEuro(amountOut))) return true;
+        if(amountIn.equals(formatUnsignedEuro(amountOut))) return true;
+        if(amountIn.equals(formatSignedEuro(amountOut))) return true;
+        return false;
+    }
 
-    /**Punkt als Decimal Trennzeichen, kein Währungszeichen und kein Vorzeichen*/
+
+    /**Komma als Decimal Trennzeichen, tausender Punkte, kein Währungszeichen und kein Vorzeichen*/
+    public static String formatBigDecimalWithSeparator(BigDecimal amt) {
+        BigDecimal v = (amt != null ? amt : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        v = v.abs();
+        java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols(java.util.Locale.GERMANY);
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", sym);
+        return df.format(v);
+    }
+
+    /**Punkt als Decimal Trennzeichen, keine tausender Punkte, kein Währungszeichen und kein Vorzeichen*/
     public static String formatBigDecimal(BigDecimal amt) {
         BigDecimal v = (amt != null ? amt : BigDecimal.ZERO)
                 .setScale(2, RoundingMode.HALF_UP);
         return v.toPlainString();
     }
 
+    /**Komma als Decimal Trennzeichen, tausender Punkte, kein Währungszeichen und kein Vorzeichen*/
+    public static String formatBigDecimalComma(BigDecimal amt) {
+        BigDecimal v = (amt != null ? amt : BigDecimal.ZERO)
+                .setScale(2, RoundingMode.HALF_UP);
+        return v.toPlainString().replace('.', ',');
+    }
 
-    /**Komma als Decimal Trennzeichen und kein Währungszeichen und kein Vorzeichen*/
-    public static String formatEuro(BigDecimal amt) {
+    /**Komma als Decimal Trennzeichen, tausender Punkte und kein Währungszeichen und kein Vorzeichen*/
+    public static String formatUnsignedEuro(BigDecimal amt) {
         BigDecimal v = (amt != null ? amt : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
         return EUR.format(v);
     }
 
-    /**Komma als Decimal Trennzeichen und Währungszeichen und Vorzeichen*/
+    /**Komma als Decimal Trennzeichen, tausender Punkte und Währungszeichen und Vorzeichen*/
     public static String formatSignedEuro(BigDecimal amt) {
         BigDecimal v = (amt != null ? amt : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
         String s = EUR.format(v.abs());
