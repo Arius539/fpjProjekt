@@ -248,7 +248,7 @@ public class TransactionViewController {
                 };
 
                 String subtitle = UiHelpers.truncateFull(item.description(), 30);
-                String amountText = item.amountString(currentUser.getUsername());
+                String amountText = item.amountStringSigned(currentUser.getUsername());
 
                 HBox root = createTransactionRowBox(counterparty, subtitle, amountText);
                 setGraphic(root);
@@ -532,6 +532,24 @@ public class TransactionViewController {
     }
 
     private void addTransactionToBatch(List<MassTransfer> massTransfers) {
+        BigDecimal amount = BigDecimal.ZERO;
+        for (MassTransfer massTransfer : massTransfers) {
+            amount= amount.add(massTransfer.betrag());
+        }
+        BigDecimal balance = transactionService.computeBalance(currentUser.getId());
+        BigDecimal after = balance.subtract(amount);
+
+        if(after.compareTo(BigDecimal.ZERO) < 0) {
+            boolean response = alertService.confirmYesNo(
+                    "CSV Import fehlgeschlagen",
+                    "Guthaben reicht nicht",
+                    "CSV wurde erfolgreich eingelesen.\n"
+                            + "Endsaldo wäre: " + UiHelpers.formatAmount(after, true, true, true, ',', true, '.', false) + "\n\n"
+                            + "Trotzdem in die Liste für gesammelte Transaktionen übernehmen?"
+            );
+            if(!response)return;
+        }
+
         for (MassTransfer massTransfer : massTransfers) {
             batchTransactionList.add(new TransactionLite(massTransfer.betrag(), TransactionType.UEBERWEISUNG, currentUser.getUsername(), massTransfer.empfaenger(), massTransfer.beschreibung()));
         }

@@ -119,7 +119,6 @@ public class CsvImportDialogController<E> {
         importTask.setOnSucceeded(event1 -> {
             CsvImportResult<E> result = importTask.getValue();
             if (result.getErrors().isEmpty()) {
-                alertService.info("Import erfolgreich", "Der CSV import war erfolgreich.");
                 csvImportConsumer.accept(result.getRecords());
                 this.viewNavigator.closeCsvDialog();
             } else {
