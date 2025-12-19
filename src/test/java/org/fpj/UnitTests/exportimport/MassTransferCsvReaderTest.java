@@ -1,4 +1,4 @@
-package exportimport;
+package org.fpj.UnitTests.exportimport;
 
 import org.fpj.exportimport.application.MassTransferCsvReader;
 import org.fpj.exportimport.domain.CsvError;

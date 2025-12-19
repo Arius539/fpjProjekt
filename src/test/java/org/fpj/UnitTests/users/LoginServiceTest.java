@@ -1,4 +1,4 @@
-package users;
+package org.fpj.UnitTests.users;
 
 import org.fpj.exceptions.LoginFailedException;
 import org.fpj.users.application.LoginService;

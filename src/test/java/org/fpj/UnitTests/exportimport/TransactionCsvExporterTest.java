@@ -1,4 +1,4 @@
-package exportimport;
+package org.fpj.UnitTests.exportimport;
 
 import org.fpj.exportimport.application.TransactionCsvExporter;
 import org.fpj.payments.domain.TransactionRow;

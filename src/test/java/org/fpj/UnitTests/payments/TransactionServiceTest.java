@@ -1,4 +1,4 @@
-package payments;
+package org.fpj.UnitTests.payments;
 
 import org.fpj.exceptions.TransactionException;
 import org.fpj.payments.application.TransactionService;
@@ -138,6 +138,18 @@ public class TransactionServiceTest {
     }
 
     @Test
+    public void testTransferSameSenderAndRecipient(){
+        TransactionLite transactionLite = new TransactionLite(AMOUNT, TransactionType.UEBERWEISUNG, SENDER_USERNAME, SENDER_USERNAME, SUBJECT);
+
+        when(sender.getId()).thenReturn(SENDER_ID);
+        when(userRepo.lockById(SENDER_ID)).thenReturn(Optional.of(sender));
+        when(txRepo.computeBalance(SENDER_ID)).thenReturn(BigDecimal.valueOf(STANDARD_BALANCE));
+        when(userService.findByUsername(SENDER_USERNAME)).thenReturn(sender);
+
+        assertThrows(TransactionException.class, () -> underTest.sendTransfers(transactionLite, sender));
+    }
+
+    @Test
     public void testSendBulkTransfers(){
         TransactionLite payin = new TransactionLite(BigDecimal.valueOf(100), TransactionType.EINZAHLUNG, null, SENDER_USERNAME, SUBJECT);
         TransactionLite payout = new TransactionLite(BigDecimal.valueOf(20), TransactionType.AUSZAHLUNG, SENDER_USERNAME, null, SUBJECT);
@@ -152,7 +164,7 @@ public class TransactionServiceTest {
         when(recipient.getId()).thenReturn(RECIPIENT_ID);
 
         ArrayList<TransactionResult> results = underTest.sendBulkTransfers(transactionsLite, sender);
-        BigDecimal newBalance = results.get(0).newBalance();
+        BigDecimal newBalance = results.getFirst().newBalance();
         BigDecimal expected = BigDecimal.valueOf(80);
 
         assertEquals(expected, newBalance);
@@ -173,5 +185,33 @@ public class TransactionServiceTest {
         assertThrows(TransactionException.class, () -> underTest.sendBulkTransfers(transactionsLite, sender));
     }
 
+    @Test
+    public void testTransactionInfosToTransactionLite(){
+        String amountIn = "30,00€";
+        String description = "Description";
+        TransactionType type = TransactionType.UEBERWEISUNG;
+
+        TransactionLite result = underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, RECIPIENT_USERNAME, description, type);
+        TransactionLite expected = new TransactionLite(BigDecimal.valueOf(30), type, SENDER_USERNAME, RECIPIENT_USERNAME, description);
+
+        assertEquals(result, expected);
+    }
+
+    @Test
+    public void testTransactionInfosToTransactionLiteSameUsername() {
+        String amountIn = "30,00€";
+        String description = "Description";
+        TransactionType type = TransactionType.UEBERWEISUNG;
+
+        assertThrows(TransactionException.class, () -> underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, SENDER_USERNAME, description, type));
+    }
+
+    @Test
+    public void testTransactionInfosToTransactionLiteNoType(){
+        String amountIn = "30,00€";
+        String description = "Description";
+
+        assertThrows(IllegalStateException.class, () -> underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, SENDER_USERNAME, description, null));
+    }
 
 }

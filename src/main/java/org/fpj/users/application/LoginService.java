@@ -60,7 +60,7 @@ public class LoginService {
             final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             final String hashedPassword = passwordEncoder.encode(password);
             final User newUser = new User(username.toLowerCase(), hashedPassword);
-            final User savedUser = userService.save(newUser);
+            userService.save(newUser);
             return;
         }
         throw new LoginFailedException(message);

@@ -1,0 +1,1 @@
+CREATE TYPE transaction_type_enum AS ENUM ('EINZAHLUNG', 'AUSZAHLUNG', 'UEBERWEISUNG');
