@@ -185,4 +185,33 @@ public class TransactionServiceTest {
         assertThrows(TransactionException.class, () -> underTest.sendBulkTransfers(transactionsLite, sender));
     }
 
+    @Test
+    public void testTransactionInfosToTransactionLite(){
+        String amountIn = "30,00€";
+        String description = "Description";
+        TransactionType type = TransactionType.UEBERWEISUNG;
+
+        TransactionLite result = underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, RECIPIENT_USERNAME, description, type);
+        TransactionLite expected = new TransactionLite(BigDecimal.valueOf(30), type, SENDER_USERNAME, RECIPIENT_USERNAME, description);
+
+        assertEquals(result, expected);
+    }
+
+    @Test
+    public void testTransactionInfosToTransactionLiteSameUsername() {
+        String amountIn = "30,00€";
+        String description = "Description";
+        TransactionType type = TransactionType.UEBERWEISUNG;
+
+        assertThrows(TransactionException.class, () -> underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, SENDER_USERNAME, description, type));
+    }
+
+    @Test
+    public void testTransactionInfosToTransactionLiteNoType(){
+        String amountIn = "30,00€";
+        String description = "Description";
+
+        assertThrows(IllegalStateException.class, () -> underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, SENDER_USERNAME, description, null));
+    }
+
 }

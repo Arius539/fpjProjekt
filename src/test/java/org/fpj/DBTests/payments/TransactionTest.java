@@ -23,8 +23,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Testcontainers
 @SpringBootTest
@@ -219,18 +218,43 @@ public class TransactionTest {
         ZoneId zone = ZoneId.of("Europe/Berlin");
         Instant from = localDateTime.atZone(zone).toInstant();
 
-        TransactionViewSearchParameter parameter = new TransactionViewSearchParameter(userId1, null, from, null, USERNAME1, BigDecimal.valueOf(35), BigDecimal.valueOf(60));
-        Page<TransactionRow> transactionRows = transactionService.searchTransactions(parameter, 0, 1);
-        TransactionRow transactionRow = transactionRows.getContent().getFirst();
+        TransactionViewSearchParameter parameter = new TransactionViewSearchParameter(userId1, null, from, null, "testUser", BigDecimal.valueOf(35), BigDecimal.valueOf(60));
+        Page<TransactionRow> transactionRows = transactionService.searchTransactions(parameter, 0, 2);
+        TransactionRow transactionRow1 = transactionRows.getContent().getFirst();
+        TransactionRow transactionRow2 = transactionRows.getContent().get(1);
         long size = transactionRows.getTotalElements();
-        long senderId = transactionRow.senderId();
-        long recipientId = transactionRow.recipientId();
-        BigDecimal amount = transactionRow.amount();
+        long senderId1 = transactionRow1.senderId();
+        long recipientId1 = transactionRow1.recipientId();
+        BigDecimal amt1 = transactionRow1.amount();
+        long recipientId2 = transactionRow2.recipientId();
+        BigDecimal amt2 = transactionRow2.amount();
 
-        assertEquals(3, size);
-        assertEquals(userId1, senderId);
-        assertEquals(userId2, recipientId);
-        assertEquals(amount2, amount);
+        assertEquals(2, size);
+        assertEquals(userId1, senderId1);
+        assertEquals(userId2, recipientId1);
+        assertEquals(0, amt1.compareTo(amount2));
+        assertNull(transactionRow2.senderId());
+        assertEquals(userId1, recipientId2);
+        assertEquals(0, amt2.compareTo(amount2));
+    }
+
+    @Test
+    public void testFindUserBalanceAfterTransaction(){
+        BigDecimal amount1 = BigDecimal.valueOf(30);
+        BigDecimal amount2 = BigDecimal.valueOf(40);
+        TransactionLite transactionLite1 = new TransactionLite(amount1, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite2 = new TransactionLite(amount2, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
+        TransactionLite transactionLite3 = new TransactionLite(amount1, TransactionType.UEBERWEISUNG, USERNAME1, USERNAME2, SUBJECT);
+
+        transactionService.sendTransfers(transactionLite1, currentUser);
+        TransactionResult result = transactionService.sendTransfers(transactionLite2, currentUser);
+        transactionService.sendTransfers(transactionLite3, currentUser);
+
+        BigDecimal balanceAfter2ndPayin = transactionService.findUserBalanceAfterTransaction(userId1, result.transaction().getId());
+
+        BigDecimal expected = BigDecimal.valueOf(70);
+
+        assertEquals(0, balanceAfter2ndPayin.compareTo(expected));
     }
 
 }
