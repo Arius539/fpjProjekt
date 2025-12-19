@@ -187,7 +187,7 @@ public class TransactionServiceTest {
 
     @Test
     public void testTransactionInfosToTransactionLite(){
-        String amountIn = "30,00€";
+        BigDecimal amountIn = BigDecimal.valueOf(30);
         String description = "Description";
         TransactionType type = TransactionType.UEBERWEISUNG;
 
@@ -199,7 +199,7 @@ public class TransactionServiceTest {
 
     @Test
     public void testTransactionInfosToTransactionLiteSameUsername() {
-        String amountIn = "30,00€";
+        BigDecimal amountIn = BigDecimal.valueOf(30);
         String description = "Description";
         TransactionType type = TransactionType.UEBERWEISUNG;
 
@@ -208,7 +208,7 @@ public class TransactionServiceTest {
 
     @Test
     public void testTransactionInfosToTransactionLiteNoType(){
-        String amountIn = "30,00€";
+        BigDecimal amountIn = BigDecimal.valueOf(30);
         String description = "Description";
 
         assertThrows(IllegalStateException.class, () -> underTest.transactionInfosToTransactionLite(amountIn, SENDER_USERNAME, SENDER_USERNAME, description, null));
