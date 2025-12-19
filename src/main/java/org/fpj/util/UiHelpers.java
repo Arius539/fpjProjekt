@@ -99,27 +99,79 @@ public class UiHelpers {
         String result = sb.toString();
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
+    /** überprüft ob amount in mit einer der möglichen / logischen Kombinationen mit formatAmound übereinstimmt*/
+    public static boolean amountCheck(String amountIn, BigDecimal amountOut) {
+        if (amountIn == null) return false;
+        BigDecimal v = (amountOut != null ? amountOut : BigDecimal.ZERO);
 
+        String[] candidates = {
+                formatAmount(v, false, true,  false, ',', true,  '\0', false), // 1.234,57
+                formatAmount(v, false, true,  false, ',', false, '\0', false), // 1234,57
+                formatAmount(v, false, true,  false, ',', false, '\0', true), // 1234
 
-    /**Punkt als Decimal Trennzeichen, kein Währungszeichen und kein Vorzeichen*/
-    public static String formatBigDecimal(BigDecimal amt) {
-        BigDecimal v = (amt != null ? amt : BigDecimal.ZERO)
-                .setScale(2, RoundingMode.HALF_UP);
-        return v.toPlainString();
+                formatAmount(v, false, true,  false, '.', false, '\0', false), // 1234.57
+                formatAmount(v, false, true,  false, '.', true,  '\0', false), // 1,234.57
+
+                formatAmount(v, false, true,  true,  ',', true,  '\0', false), // 1.234,57 €
+                formatAmount(v, false, true,  true,  '.', true,  '\0', false), // 1,234.57 €
+                formatAmount(v, false, true,  true,  ',', false,  '\0', true), // 1234 €
+
+                formatAmount(v, true,  true,  true,  ',', true,  '\0', false), // +1.234,57 €
+                formatAmount(v, true,  true,  true,  '.', true,  '\0', false), // +1,234.57 €
+
+                formatAmount(v, false, true,  false, ',', true,  '.',  true),  // 1.235
+                formatAmount(v, false, true,  false, '.', true,  ',',  true),  // 1,235
+                formatAmount(v, false, true,  true,  ',', true,  '.',  true),  // 1.235 €
+                formatAmount(v, false, true,  true,  '.', true,  ',',  true)   // 1,235 €
+        };
+
+        for (String c : candidates) {
+            if (amountIn.equals(c)) return true;
+        }
+        return false;
     }
 
+    /**
+     * Formatiert einen Betrag mit optionalem Währungszeichen sowie konfigurierbarem Vorzeichen,
+     * Dezimal- und Tausendertrennzeichen.
+     */
+    public static String formatAmount(BigDecimal amount, boolean positiveSigned, boolean negativSigned, boolean currencySymbol, char decimalSeparatorC, boolean thousandsSeparator, char thousandsSeparatorC, boolean ignoreFractionalDigits
+    ) {
+        BigDecimal v = (amount != null ? amount : BigDecimal.ZERO);
 
-    /**Komma als Decimal Trennzeichen und kein Währungszeichen und kein Vorzeichen*/
-    public static String formatEuro(BigDecimal amt) {
-        BigDecimal v = (amt != null ? amt : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-        return EUR.format(v);
-    }
+        int scale = ignoreFractionalDigits ? 0 : 2;
+        v = v.setScale(scale, java.math.RoundingMode.HALF_UP);
 
-    /**Komma als Decimal Trennzeichen und Währungszeichen und Vorzeichen*/
-    public static String formatSignedEuro(BigDecimal amt) {
-        BigDecimal v = (amt != null ? amt : BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-        String s = EUR.format(v.abs());
-        return (v.signum() < 0 ? "-" : "+") + " " + s;
+        boolean isNeg = v.signum() < 0;
+        if (!negativSigned && isNeg) {
+            v = v.abs();
+            isNeg = false;
+        }
+
+        // Dezimalzeichen ist nur relevant, wenn Nachkommastellen ausgegeben werden.
+        char decSep = (ignoreFractionalDigits ? '.' : decimalSeparatorC);
+        if (decSep == '\0') decSep = ','; // Default
+
+        char grpSepDefault = (decSep == ',') ? '.' : ',';
+        char grpSep = (thousandsSeparatorC != '\0') ? thousandsSeparatorC : grpSepDefault;
+
+        java.text.DecimalFormatSymbols sym = new java.text.DecimalFormatSymbols();
+        sym.setDecimalSeparator(decSep);
+        sym.setGroupingSeparator(grpSep);
+
+        String pattern = ignoreFractionalDigits ? "#,##0" : "#,##0.00";
+        java.text.DecimalFormat df = new java.text.DecimalFormat(pattern, sym);
+        df.setRoundingMode(java.math.RoundingMode.HALF_UP);
+        df.setGroupingUsed(thousandsSeparator);
+
+        String s = df.format(v.abs());
+
+        if (currencySymbol) {
+            s = s + " €";
+        }
+
+        if (isNeg) return "-" + s;
+        return (positiveSigned ? "+" : "") + s;
     }
 
     public static BigDecimal parseAmountTolerant(String raw) {

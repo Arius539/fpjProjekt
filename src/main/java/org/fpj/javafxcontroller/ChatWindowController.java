@@ -25,6 +25,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
@@ -171,19 +173,23 @@ public class ChatWindowController {
             }
 
             Window window = btnExport.getScene().getWindow();
-            String path = FileHandling.openFileChooserAndGetPath(window);
 
+            String fileName ="ChatExport_" + this.currentChatPartner.getUsername() +"_" +this.currentUser.getUsername()+ ".csv";
+
+            String path = FileHandling.openDirectoryChooserAndGetPath(window);
             if (path == null) {
                 throw new IllegalStateException("Das Auswählen des Dateipfades ist fehlgeschlagen.");
             }
+            File file = FileHandling.createFileVersioned(path, fileName);
 
             List<DirectMessage> messages = directMessageService.getConversationMessageList(this.currentUser.getId(), this.currentChatPartner.getId());
-            directMessageCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
+            directMessageCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(file.getAbsolutePath()));
 
-            alertService.info("Export erfolgreich","Der Export der Nachrichten war erfolgreich. Du findest die Einträge in: " + path);
-        } catch (IllegalArgumentException e) {
+            alertService.info("Export erfolgreich","Der Export der Nachrichten war erfolgreich. Du findest die Einträge in: " + file.getAbsolutePath());
+        } catch (IOException | IllegalArgumentException e){
             alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Nachrichten: " + e.getMessage());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             alertService.error("Unerwarteter Fehler", "Ein unbekannter Fehler ist aufgetreten: " + e.getMessage());
         }
     }

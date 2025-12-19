@@ -26,10 +26,10 @@ public record TransactionLite(
     public int hashCode(){
         return Objects.hash(amount == null ? null : amount.stripTrailingZeros(), type, senderUsername, recipientUsername, description);
     }
-
-    public String amountString(String currentUsername) {
-        boolean outgoing = this.senderUsername() != null && this.senderUsername().equals(currentUsername);
-        return UiHelpers.formatSignedEuro(!outgoing ? this.amount():new BigDecimal("0").subtract(this.amount()));
+        
+    public String amountStringSigned(String currentUsername) {
+        boolean outgoing = isOutgoing(currentUsername);
+        return UiHelpers.formatAmount(!outgoing ? this.amount():new BigDecimal("0").subtract(this.amount()), true,true, true, ',', true, '\0', false);
     }
 
     public boolean isOutgoing(String currentUsername){
@@ -38,7 +38,7 @@ public record TransactionLite(
     }
 
     public String amountStringUnsigned() {
-        return UiHelpers.formatEuro( this.amount());
+        return UiHelpers.formatAmount(this.amount(), false,false, true, ',', true, '\0', false);
     }
 
     public static TransactionLite fromTransactionRow(TransactionRow row){

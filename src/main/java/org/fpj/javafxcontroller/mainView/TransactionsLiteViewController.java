@@ -13,6 +13,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.controlsfx.control.textfield.TextFields;
+import org.fpj.exceptions.UserInputNormalizationException;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
@@ -38,6 +39,8 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
+
+import static org.fpj.util.UiHelpers.parseAmountTolerant;
 
 @Component
 public class TransactionsLiteViewController {
@@ -185,7 +188,7 @@ public class TransactionsLiteViewController {
 
     private void updateBalance() {
         BigDecimal balance = transactionService.computeBalance(this.currentUser.getId());
-        this.balanceRefreshCallback.accept(UiHelpers.formatEuro(balance));
+        this.balanceRefreshCallback.accept(UiHelpers.formatAmount(balance, false,false, true, ',', true, '\0', false));
     }
 
     @FXML
@@ -207,7 +210,8 @@ public class TransactionsLiteViewController {
             String amount = tfBetrag.getText();
             String subjectRaw = tfBetreff.getText();
             String subject = subjectRaw == null ? "" : subjectRaw.trim();
-            String recipient = tfEmpfaenger.getText();
+            String recipient =UiHelpers.safe(tfEmpfaenger.getText());
+            BigDecimal amountNum = parseAmountTolerant(amount);
 
             String sender;
             TransactionType type;
@@ -227,10 +231,12 @@ public class TransactionsLiteViewController {
             } else {
                 throw new IllegalStateException("Kein Transaktionstyp ausgewählt.");
             }
+            tfBetrag.setText(UiHelpers.formatAmount(amountNum, false,false, true, ',', true, '\0', false));
+            if(!UiHelpers.amountCheck(amount,amountNum))throw new UserInputNormalizationException("Wir konnten den Betrag nicht eindeutig lesen bestätige deine Eingabe");
 
-            TransactionLite transactionLite = transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
+            TransactionLite transactionLite = transactionService.transactionInfosToTransactionLite(amountNum, sender, recipient, subject, type);
             TransactionResult result = transactionService.sendTransfers(transactionLite, this.currentUser);
-            this.balanceRefreshCallback.accept(UiHelpers.formatEuro(result.newBalance()));
+            this.balanceRefreshCallback.accept(UiHelpers.formatAmount(result.newBalance(), false,true, true, ',', true, '\0', false));
 
             TransactionRow row = TransactionRow.fromTransaction(result.transaction());
             addLiteTransaction(row);
@@ -239,6 +245,8 @@ public class TransactionsLiteViewController {
             tfBetreff.clear();
             tfEmpfaenger.clear();
             updateBalance();
+        } catch (UserInputNormalizationException ex) {
+            alertService.error("Überprüfe deine Eingabe", ex.getMessage());
         } catch (TransactionException | DataNotPresentException | NoSuchElementException ex) {
             alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException ex) {

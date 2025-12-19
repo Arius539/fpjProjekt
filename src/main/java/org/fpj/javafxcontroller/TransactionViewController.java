@@ -2,7 +2,6 @@ package org.fpj.javafxcontroller;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.SelectionMode;
@@ -13,6 +12,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
 import org.controlsfx.control.textfield.TextFields;
+import org.fpj.exceptions.UserInputNormalizationException;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
@@ -35,11 +35,14 @@ import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.fpj.util.UiHelpers.parseAmountTolerant;
 
 @Component
 public class TransactionViewController {
@@ -245,7 +248,7 @@ public class TransactionViewController {
                 };
 
                 String subtitle = UiHelpers.truncateFull(item.description(), 30);
-                String amountText = item.amountString(currentUser.getUsername());
+                String amountText = item.amountStringSigned(currentUser.getUsername());
 
                 HBox root = createTransactionRowBox(counterparty, subtitle, amountText);
                 setGraphic(root);
@@ -291,11 +294,11 @@ public class TransactionViewController {
 
     private void updateCurrentBalanceLabel() {
         BigDecimal balance = transactionService.computeBalance(currentUser.getId());
-        currentBalanceLabel.setText(UiHelpers.formatEuro(balance));
+        currentBalanceLabel.setText(UiHelpers.formatAmount(balance, false,false, true, ',', true, '\0', false));
     }
 
     private void updateSelectedBalanceLabel(BigDecimal amount) {
-        selectedTransactionBalanceLabel.setText(UiHelpers.formatEuro(amount));
+        selectedTransactionBalanceLabel.setText(UiHelpers.formatAmount(amount, true,true, true, ',', true, '\0', false));
     }
 
     private BigDecimal getBalanceAfterListOfItems(List<TransactionLite> transactions) {
@@ -312,7 +315,7 @@ public class TransactionViewController {
 
     private void updateBatchTransactionBalanceLabel() {
         BigDecimal newBalance = getBalanceAfterListOfItems(batchTransactionList);
-        balanceLabelBatch.setText(UiHelpers.formatSignedEuro(newBalance));
+        balanceLabelBatch.setText(UiHelpers.formatAmount(newBalance, true,true, true, ',', true, '\0', false));
     }
 
     private ArrayList<TransactionResult> executeTransactionByList(List<TransactionLite> transactions) {
@@ -331,10 +334,11 @@ public class TransactionViewController {
             String amount = amountField.getText();
             String subjectRaw = purposeField.getText();
             String subject = subjectRaw == null ? "" : UiHelpers.truncate(subjectRaw, subjectRaw.length());
-            String recipient = receiverUsernameField.getText();
+            String recipient =UiHelpers.safe(receiverUsernameField.getText());
+            BigDecimal amountNum = parseAmountTolerant(amount);
+
             String sender = null;
             TransactionType type;
-
             if (depositRadio.isSelected()) {
                 recipient = currentUser.getUsername();
                 type = TransactionType.EINZAHLUNG;
@@ -348,9 +352,12 @@ public class TransactionViewController {
             } else {
                 throw new IllegalStateException("Kein Transaktionstyp ausgewählt.");
             }
-
-            return transactionService.transactionInfosToTransactionLite(amount, sender, recipient, subject, type);
-        } catch (TransactionException ex) {
+            amountField.setText(UiHelpers.formatAmount(amountNum, false,false, true, ',', true, '\0', false));
+            if(!UiHelpers.amountCheck(amount,amountNum ) )throw new UserInputNormalizationException("Wir konnten den Betrag nicht eindeutig lesen bestätige deine Eingabe");
+            return transactionService.transactionInfosToTransactionLite(amountNum, sender, recipient, subject, type);
+        } catch (UserInputNormalizationException ex) {
+            alertService.error("Überprüfe deine Eingabe", ex.getMessage());
+        }  catch (TransactionException ex) {
             alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException | DataNotPresentException ex) {
             alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());
@@ -449,11 +456,11 @@ public class TransactionViewController {
                 }
                 case "Betrag ab" -> {
                     BigDecimal amountFrom = this.searchParameter.getAmountFrom();
-                    yield amountFrom != null ? UiHelpers.formatBigDecimal(amountFrom) : "";
+                    yield amountFrom != null ? UiHelpers.formatAmount(amountFrom, false,false, false,',', false, '\0', false) : "";
                 }
                 case "Betrag bis" -> {
                     BigDecimal amountTo = this.searchParameter.getAmountTo();
-                    yield amountTo != null ? UiHelpers.formatBigDecimal(amountTo) : "";
+                    yield amountTo != null ? UiHelpers.formatAmount(amountTo, false,false, false,',', false, '\0', false) : "";
                 }
                 default -> "";
             };
@@ -524,6 +531,24 @@ public class TransactionViewController {
     }
 
     private void addTransactionToBatch(List<MassTransfer> massTransfers) {
+        BigDecimal amount = BigDecimal.ZERO;
+        for (MassTransfer massTransfer : massTransfers) {
+            amount= amount.add(massTransfer.betrag());
+        }
+        BigDecimal balance = transactionService.computeBalance(currentUser.getId());
+        BigDecimal after = balance.subtract(amount);
+
+        if(after.compareTo(BigDecimal.ZERO) < 0) {
+            boolean response = alertService.confirmYesNo(
+                    "CSV Import fehlgeschlagen",
+                    "Guthaben reicht nicht",
+                    "CSV wurde erfolgreich eingelesen.\n"
+                            + "Endsaldo wäre: " + UiHelpers.formatAmount(after, true, true, true, ',', true, '.', false) + "\n\n"
+                            + "Trotzdem in die Liste für gesammelte Transaktionen übernehmen?"
+            );
+            if(!response)return;
+        }
+
         for (MassTransfer massTransfer : massTransfers) {
             batchTransactionList.add(new TransactionLite(massTransfer.betrag(), TransactionType.UEBERWEISUNG, currentUser.getUsername(), massTransfer.empfaenger(), massTransfer.beschreibung()));
         }
@@ -648,15 +673,18 @@ public class TransactionViewController {
             }
 
             Window window = importCsvButton.getScene().getWindow();
-            String path = FileHandling.openFileChooserAndGetPath(window);
+
+            String fileName ="TransaktionenExport_" +this.currentUser.getUsername()+ ".csv";
+
+            String path = FileHandling.openDirectoryChooserAndGetPath(window);
             if (path == null) {
-                alertService.error("Pfad ungültig", "Das Auswählen des Zielpfads ist fehlgeschlagen.");
-                return;
+                throw new IllegalStateException("Das Auswählen des Dateipfades ist fehlgeschlagen.");
             }
+            File file = FileHandling.createFileVersioned(path, fileName);
 
             List<TransactionRow> messages = transactionService.transactionsForUserAsList(currentUser.getId());
-            transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + path);
+            transactionCsvExporter.export(messages.iterator(), FileHandling.openFileAsOutStream(file.getAbsolutePath()));
+            alertService.info("Export erfolgreich", "Der Export der Transaktionen war erfolgreich. Du findest die Einträge in: " + file.getAbsolutePath());
         } catch (IllegalArgumentException e) {
             alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Transaktionen: " + e.getMessage());
         } catch (Exception e) {

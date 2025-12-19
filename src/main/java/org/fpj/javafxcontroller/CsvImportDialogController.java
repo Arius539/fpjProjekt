@@ -23,6 +23,7 @@ import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.exportimport.application.FileHandling;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import javafx.util.Duration;
 
 import java.io.InputStream;
 import java.util.List;
@@ -118,7 +119,6 @@ public class CsvImportDialogController<E> {
         importTask.setOnSucceeded(event1 -> {
             CsvImportResult<E> result = importTask.getValue();
             if (result.getErrors().isEmpty()) {
-                alertService.info("Import erfolgreich", "Der CSV import war erfolgreich.");
                 csvImportConsumer.accept(result.getRecords());
                 this.viewNavigator.closeCsvDialog();
             } else {
@@ -157,7 +157,11 @@ public class CsvImportDialogController<E> {
 
                 HBox root = createErrorRowBox(titleText, subtitleText, rawDisplay, item.getSeverity());
                 setGraphic(root);
-                setTooltip(new Tooltip(buildTooltipText(item, severityText, raw)));
+                Tooltip t = new Tooltip(buildTooltipText(item, severityText, raw));
+                t.setShowDelay(Duration.ZERO);
+                t.setHideDelay(Duration.seconds(1));
+                t.setShowDuration(Duration.INDEFINITE);
+                setTooltip(t);
                 setStyle(backgroundStyle(item.getSeverity()));
             }
         });

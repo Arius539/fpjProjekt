@@ -33,6 +33,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.List;
 
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
@@ -246,17 +247,21 @@ public class WallCommentViewController {
             }
 
             Window window = exportButton.getScene().getWindow();
-            String path = FileHandling.openFileChooserAndGetPath(window);
+
+            String fileName ="PinnwandExport_Kommentare"+ (isGetByAuthor()? "_Von_": "_Fuer_") +this.currentUser.getUsername()+ ".csv";
+
+            String path = FileHandling.openDirectoryChooserAndGetPath(window);
             if (path == null) {
                 throw new IllegalStateException("Das Auswählen des Dateipfades ist fehlgeschlagen.");
             }
+            File file = FileHandling.createFileVersioned(path, fileName);
 
             List<WallComment> comments = isGetByAuthor()
                     ? wallCommentService.toListByAuthor(currentUser.getId())
                     : wallCommentService.toListByWallOwner(currentUser.getId());
 
-            wallCommentCsvExporter.export(comments.iterator(), FileHandling.openFileAsOutStream(path));
-            alertService.info("Export erfolgreich", "Der Export der Pinnwandkommentare war erfolgreich. Du findest die Einträge in: " + path);
+            wallCommentCsvExporter.export(comments.iterator(), FileHandling.openFileAsOutStream(file.getAbsolutePath()));
+            alertService.info("Export erfolgreich", "Der Export der Pinnwandkommentare war erfolgreich. Du findest die Einträge in: " + file.getAbsolutePath());
         } catch (IllegalArgumentException | IllegalStateException e) {
             alertService.error("Export fehlgeschlagen", "Fehler beim Exportieren der Pinnwandkommentare: " + e.getMessage());
         } catch (Exception e) {

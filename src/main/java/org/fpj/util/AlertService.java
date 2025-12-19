@@ -2,7 +2,10 @@ package org.fpj.util;
 
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class AlertService {
@@ -59,5 +62,17 @@ public class AlertService {
 
     public void error(String message){
         error("Fehler", null, message);
+    }
+
+    public boolean confirmYesNo(String title, String header, String message) {
+        ButtonType yes = new ButtonType("Ja");
+        ButtonType no  = new ButtonType("Nein");
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, message, yes, no);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == yes;
     }
 }

@@ -34,7 +34,7 @@ public class TransactionCsvExporter {
                         t.recipientUsername(),
                         t.senderUsername(),
                         UiHelpers.truncateFull(description, description.length()),
-                        UiHelpers.formatBigDecimal(t.amount().abs()),
+                        UiHelpers.formatAmount(t.amount(), false, false, false, ',', false, ',', false),
                         t.type().name()
                 );
             }

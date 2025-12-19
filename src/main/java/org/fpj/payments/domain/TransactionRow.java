@@ -17,11 +17,7 @@ public record TransactionRow(
 ) {
 
     public String amountString(long currentUserId) {
-       return UiHelpers.formatSignedEuro(!this.isOutgoing(currentUserId) ? this.amount():new BigDecimal("0").subtract(this.amount()));
-    }
-
-    public String amountStringUnsigned() {
-        return UiHelpers.formatEuro( this.amount());
+       return UiHelpers.formatAmount(!this.isOutgoing(currentUserId) ? this.amount():new BigDecimal("0").subtract(this.amount()), true,true, true, ',', true, '\0', false);
     }
 
     public boolean isOutgoing(long currentUserId){
