@@ -357,8 +357,7 @@ public class TransactionViewController {
             return transactionService.transactionInfosToTransactionLite(amountNum, sender, recipient, subject, type);
         } catch (UserInputNormalizationException ex) {
             alertService.error("Überprüfe deine Eingabe", ex.getMessage());
-        }
-        catch (TransactionException ex) {
+        }  catch (TransactionException ex) {
             alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException | DataNotPresentException ex) {
             alertService.error("Eingabe ungültig", "Eingabe ungültig: " + ex.getMessage());

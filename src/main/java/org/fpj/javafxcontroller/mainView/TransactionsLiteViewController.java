@@ -245,6 +245,8 @@ public class TransactionsLiteViewController {
             tfBetreff.clear();
             tfEmpfaenger.clear();
             updateBalance();
+        } catch (UserInputNormalizationException ex) {
+            alertService.error("Überprüfe deine Eingabe", ex.getMessage());
         } catch (TransactionException | DataNotPresentException | NoSuchElementException ex) {
             alertService.error("Transaktion fehlgeschlagen", "Transaktion fehlgeschlagen: " + ex.getMessage());
         } catch (IllegalArgumentException ex) {
