@@ -52,8 +52,6 @@ public class DirectMessageTest {
 
     private Long currentUserId;
     private Long contact1Id;
-    private Long contact2Id;
-    private Long contact3Id;
 
     private static final String USERNAME_CURRENT_USER = "testuser1@web.de";
     private static final String USERNAMEC1 = "testuser2@gmx.de";
@@ -75,7 +73,6 @@ public class DirectMessageTest {
     private User contact1;
     private User contact2;
     private User contact3;
-    private User contact4;
 
     @BeforeEach
     public void setUp(){
@@ -89,8 +86,6 @@ public class DirectMessageTest {
 
         currentUserId = currentUser.getId();
         contact1Id = contact1.getId();
-        contact2Id = contact2.getId();
-        contact3Id = contact3.getId();
     }
 
     @Test
