@@ -28,15 +28,15 @@ public class WallCommentService {
         if(comment.getAuthor() == null)throw new  IllegalArgumentException("Es ist ein Fehler beim laden der nötigen Informationen aufgetreten");
         if(comment.getWallOwner().getUsername().equals(comment.getAuthor().getUsername()))throw new  IllegalArgumentException("Du kannst nicht auf deiner eigenen Pinnwand kommentieren");
 
-        this.wallCommentRepository.save(comment);
+        wallCommentRepository.save(comment);
         return comment;
     }
 
     public List<WallComment> toListByAuthor(Long authorId) {
-        return this.wallCommentRepository.toListByAuthor(authorId);
+        return wallCommentRepository.toListByAuthor(authorId);
     }
 
     public List<WallComment> toListByWallOwner(Long ownerId) {
-        return this.wallCommentRepository.toListByWallOwner(ownerId);
+        return wallCommentRepository.toListByWallOwner(ownerId);
     }
 }
