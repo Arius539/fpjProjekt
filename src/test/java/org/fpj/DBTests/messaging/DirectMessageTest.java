@@ -2,6 +2,7 @@ package org.fpj.DBTests.messaging;
 
 import org.fpj.messaging.application.DirectMessageService;
 import org.fpj.messaging.domain.ChatPreview;
+import org.fpj.messaging.domain.DirectMessage;
 import org.fpj.messaging.domain.DirectMessageRepository;
 import org.fpj.messaging.domain.DirectMessageRow;
 import org.fpj.users.domain.User;
@@ -65,25 +66,42 @@ public class DirectMessageTest {
     private static final String TEXT4 = "Mir geht es gut. Wie geht's dir?";
     private static final String TEXT5 = "Kein Problem bekommst du noch heute Abend";
 
-    private final User currentUser = new User(USERNAME_CURRENT_USER, "password123");
-    private final User contact1 = new User(USERNAMEC1, "password456");
-    private final User contact2 = new User(USERNAMEC2, "wordpass123");
-    private final User contact3 = new User(USERNAMEC3, "wordpass456");
+    private final User user1 = new User(USERNAME_CURRENT_USER, "password123");
+    private final User user2 = new User(USERNAMEC1, "password456");
+    private final User user3 = new User(USERNAMEC2, "wordpass123");
+    private final User user4 = new User(USERNAMEC3, "wordpass456");
+
+    private User currentUser;
+    private User contact1;
+    private User contact2;
+    private User contact3;
+    private User contact4;
 
     @BeforeEach
     public void setUp(){
         directMessageRepo.deleteAll();
         userRepo.deleteAll();
 
-        userRepo.save(currentUser);
-        userRepo.save(contact1);
-        userRepo.save(contact2);
-        userRepo.save(contact3);
+        currentUser = userRepo.save(user1);
+        contact1 = userRepo.save(user2);
+        contact2 = userRepo.save(user3);
+        contact3 = userRepo.save(user4);
 
         currentUserId = currentUser.getId();
         contact1Id = contact1.getId();
         contact2Id = contact2.getId();
         contact3Id = contact3.getId();
+    }
+
+    @Test
+    public void testAddDirectMessage(){
+        DirectMessageRow dm1 = new DirectMessageRow(currentUser, contact1, TEXT1);
+        DirectMessage dmAdded = directMessageService.addDirectMessage(dm1);
+
+
+        assertEquals(currentUserId, dmAdded.getSender().getId());
+        assertEquals(contact1Id, dmAdded.getRecipient().getId());
+        assertEquals(TEXT1, dmAdded.getContent());
     }
 
     @Test
@@ -103,6 +121,41 @@ public class DirectMessageTest {
         assertEquals(USERNAMEC1, second.name());
         assertEquals(TEXT4, second.lastMessage());
         assertEquals(USERNAMEC1, second.lastMessageUsername());
+    }
+
+    @Test
+    public void testGetConversation(){
+        makeContacts();
+        PageRequest pageRequest = PageRequest.of(0, 5);
+
+        Page<DirectMessage> dmPage = directMessageService.getConversation(currentUser, contact1, pageRequest);
+        DirectMessage lastMessage = dmPage.getContent().getFirst();
+        DirectMessage firstMessage = dmPage.getContent().get(1);
+
+        assertEquals(2L, dmPage.getTotalElements());
+        assertEquals(contact1Id, lastMessage.getSender().getId());
+        assertEquals(currentUserId, lastMessage.getRecipient().getId());
+        assertEquals(TEXT4, lastMessage.getContent());
+        assertEquals(currentUserId, firstMessage.getSender().getId());
+        assertEquals(contact1Id, firstMessage.getRecipient().getId());
+        assertEquals(TEXT1, firstMessage.getContent());
+    }
+
+    @Test
+    public void testGetConversationMessageList(){
+        makeContacts();
+
+        List<DirectMessage> dmList = directMessageService.getConversationMessageList(currentUserId, contact1Id);
+        DirectMessage lastMessage = dmList.getFirst();
+        DirectMessage firstMessage = dmList.get(1);
+
+        assertEquals(2, dmList.size());
+        assertEquals(contact1Id, lastMessage.getSender().getId());
+        assertEquals(currentUserId, lastMessage.getRecipient().getId());
+        assertEquals(TEXT4, lastMessage.getContent());
+        assertEquals(currentUserId, firstMessage.getSender().getId());
+        assertEquals(contact1Id, firstMessage.getRecipient().getId());
+        assertEquals(TEXT1, firstMessage.getContent());
     }
 
     private void makeContacts(){

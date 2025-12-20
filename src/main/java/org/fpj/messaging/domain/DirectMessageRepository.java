@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,11 +14,14 @@ import java.util.Optional;
 public interface DirectMessageRepository extends JpaRepository<DirectMessage, Long>{
     Page<DirectMessage> findByRecipient_IdOrderByCreatedAtDesc(Long recipientId, Pageable pageable);
     Page<DirectMessage> findBySender_IdOrderByCreatedAtDesc(Long senderId, Pageable pageable);
+
     @Query("""
         select dm
-        from DirectMessage dm
-        where (dm.sender.id = :a and dm.recipient.id = :b)
-           or (dm.sender.id = :b and dm.recipient.id = :a)
+        from DirectMessage dm 
+            join fetch  dm.sender s
+            join fetch dm.recipient r
+        where (s.id = :a and r.id = :b)
+           or (s.id = :b and r.id = :a)
         order by dm.createdAt desc
     """)
     Page<DirectMessage> findConversation(@Param("a") Long userA, @Param("b") Long userB, Pageable pageable);
@@ -43,6 +47,7 @@ public interface DirectMessageRepository extends JpaRepository<DirectMessage, Lo
     )
     Long add(@Param("senderId") Long senderId, @Param("recipientId") Long recipientId, @Param("content") String content);
 
+    @EntityGraph(attributePaths = {"sender", "recipient"})
     @Query("SELECT d FROM DirectMessage d WHERE d.id = :id")
     Optional<DirectMessage> getDirectMessageById(@Param("id") Long id);
 
