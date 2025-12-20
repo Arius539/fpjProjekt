@@ -43,7 +43,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
                     from direct_messages dm
                     where dm.sender = :a
                     union all
-                    select dm.sender   as contact_id, dm.created_at
+                    select dm.sender as contact_id, dm.created_at
                     from direct_messages dm
                     where dm.recipient = :a
                 ) x

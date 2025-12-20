@@ -73,4 +73,6 @@ public class DirectMessageServiceTest {
         assertEquals(text2, secondChatPreview.lastMessage());
     }
 
+    //TODO: Fall Zeile 39-45 testen
+
 }
