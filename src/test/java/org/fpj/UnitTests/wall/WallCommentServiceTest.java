@@ -15,7 +15,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.mockito.Mockito.when;
@@ -29,8 +28,6 @@ public class WallCommentServiceTest {
     @Mock
     User user2;
     @Mock
-    User user3;
-    @Mock
     WallComment commentReturned;
 
     @Mock
@@ -41,7 +38,6 @@ public class WallCommentServiceTest {
 
     private static final String USERNAME1 = "testuser1@web.de";
     private static final String USERNAME2 = "testuser2@gmx.de";
-    private static final String USERNAME3 = "creativename@t-online.de";
 
     private static final LocalDateTime LOCAL_DATE_TIME = LocalDateTime.of(2025, 12, 11, 13, 30);
     private static final ZoneId ZONE = ZoneId.of("Europe/Berlin");
