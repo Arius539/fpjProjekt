@@ -21,11 +21,7 @@ public class UserService {
     }
 
     public User findByUsername(final String username){
-        Optional<User> user = userRepository.findByUsername(username);
-        if (user.isPresent()){
-            return user.get();
-        }
-        throw new DataNotPresentException("Kein User mit Username " + username + " gefunden.");
+        return userRepository.findByUsername(username).orElseThrow(() -> new DataNotPresentException("User mit Usernamen " + username + " nicht gefunden."));
     }
 
     public User save(final User user){
