@@ -1,5 +1,6 @@
 package org.fpj.UnitTests.exportimport;
 
+import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.application.MassTransferCsvReader;
 import org.fpj.exportimport.domain.CsvError;
 import org.fpj.exportimport.domain.CsvImportResult;
@@ -19,8 +20,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class MassTransferCsvReaderTest {
@@ -30,6 +31,8 @@ public class MassTransferCsvReaderTest {
     UserService userService;
     @Mock
     User currentUser;
+    @Mock
+    User someUser;
 
     @InjectMocks
     MassTransferCsvReader underTest;
@@ -47,7 +50,7 @@ public class MassTransferCsvReaderTest {
 
             assertNotNull(in, "Test-CSV nicht gefunden (Classpath): csv/MassenueberweisungTest.csv");
 
-            when(userService.findByUsername(any())).thenReturn(null);
+            when(userService.findByUsername(anyString())).thenReturn(someUser);
             when(currentUser.getUsername()).thenReturn(USERNAME);
 
             CsvImportResult<MassTransfer> result = underTest.parse(in);
@@ -68,10 +71,10 @@ public class MassTransferCsvReaderTest {
     @Test
     public void testParseWithErrors() throws IOException {
         try (InputStream in = getClass().getClassLoader().getResourceAsStream("csv/MassenueberweisungTest3errors.csv")){
-
             assertNotNull(in, "Test-CSV nicht gefunden (Classpath): csv/MassenueberweisungTest.csv");
 
-            when(userService.findByUsername(any())).thenReturn(null);
+            when(userService.findByUsername(anyString())).thenReturn(someUser);
+            when(userService.findByUsername("max.schneider@example.org")).thenThrow(DataNotPresentException.class);
             when(currentUser.getUsername()).thenReturn(USERNAME);
 
             CsvImportResult<MassTransfer> result = underTest.parse(in);
@@ -87,11 +90,12 @@ public class MassTransferCsvReaderTest {
             MassTransfer expectedFirst = new MassTransfer("anna.mueller@example.com", BigDecimal.valueOf(24.9), "Kaffee & Kuchen");
             MassTransfer expectedLast = new MassTransfer("oskar.mayer@example.net", BigDecimal.valueOf(199), "Kursgebühr");
 
+            assertEquals(3, errors.size());
             assertEquals(expectedFirst, firstMassTransfer);
             assertEquals(expectedLast, lastMassTransfer);
-            assertEquals(13L, firstError.getLine());
-            assertEquals(14L, secondError.getLine());
-            assertEquals(20L, thirdError.getLine());
+            assertEquals(3L, firstError.getLine());
+            assertEquals(13L, secondError.getLine());
+            assertEquals(14L, thirdError.getLine());
         }
     }
 
