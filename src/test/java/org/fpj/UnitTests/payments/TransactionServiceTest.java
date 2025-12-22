@@ -38,7 +38,7 @@ public class TransactionServiceTest {
 
 
     @InjectMocks
-    private TransactionService underTest = new TransactionService();
+    private TransactionService underTest;
 
     private static final String SENDER_USERNAME = "testusername1@web.de";
     private static final String RECIPIENT_USERNAME = "testusername2@web.de";

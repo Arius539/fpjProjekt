@@ -28,6 +28,7 @@ import java.time.Instant;
         }
 )
 public class Transaction {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

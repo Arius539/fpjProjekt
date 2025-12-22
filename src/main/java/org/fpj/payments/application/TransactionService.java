@@ -14,20 +14,22 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fpj.util.UiHelpers.parseAmountTolerant;
 import static org.fpj.util.UiHelpers.safe;
 import static org.fpj.payments.domain.TransactionType.*;
 
 @Service
 public class TransactionService {
-    @Autowired
-    private TransactionRepository txRepo;
+
+    private final TransactionRepository txRepo;
+    private final UserService userService;
+    private final UserRepository userRepo;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserRepository userRepo;
+    public TransactionService(TransactionRepository txRepo, UserService userService, UserRepository userRepo){
+        this.txRepo = txRepo;
+        this.userService = userService;
+        this.userRepo = userRepo;
+    }
 
     @Transactional(readOnly = true)
     public Page<TransactionRow> findLiteItemsForUser(long userId, int page, int size) {
