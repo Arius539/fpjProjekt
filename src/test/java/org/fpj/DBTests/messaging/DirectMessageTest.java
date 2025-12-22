@@ -93,7 +93,6 @@ public class DirectMessageTest {
         DirectMessageRow dm1 = new DirectMessageRow(currentUser, contact1, TEXT1);
         DirectMessage dmAdded = directMessageService.addDirectMessage(dm1);
 
-
         assertEquals(currentUserId, dmAdded.getSender().getId());
         assertEquals(contact1Id, dmAdded.getRecipient().getId());
         assertEquals(TEXT1, dmAdded.getContent());
