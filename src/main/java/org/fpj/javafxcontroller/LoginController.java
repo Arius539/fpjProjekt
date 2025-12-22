@@ -13,7 +13,6 @@ import org.fpj.users.application.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -53,10 +52,6 @@ public class LoginController {
 
     @FXML
     public void submit(ActionEvent event){
-        //für Debuggen
-        this.usernameInput.setText("TestUser@gmail.com");
-        this.passwordInput.setText("TestUser?1");
-
         Button button = (Button) event.getSource();
         final String username = usernameInput.getText();
         final String password = passwordInput.getText();
