@@ -28,16 +28,16 @@
                   spacing="10"
                   styleClass="card">
 
-                <RadioButton fx:id="rbWrittenBy"
-                             text="Verfasst von"
-                             toggleGroup="$commentFilterToggleGroup"
-                             onAction="#selectionTypeChanged"
-                             styleClass="wall-filter-toggle"/>
-
                 <RadioButton fx:id="rbWrittenFor"
                              text="Verfasst für"
                              toggleGroup="$commentFilterToggleGroup"
                              selected="true"
+                             onAction="#selectionTypeChanged"
+                             styleClass="wall-filter-toggle"/>
+
+                <RadioButton fx:id="rbWrittenBy"
+                             text="Verfasst von"
+                             toggleGroup="$commentFilterToggleGroup"
                              onAction="#selectionTypeChanged"
                              styleClass="wall-filter-toggle"/>
 
