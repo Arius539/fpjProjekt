@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.fpj.util.UiHelpers.parseAmountTolerant;
 import static org.fpj.util.UiHelpers.safe;
 import static org.fpj.payments.domain.TransactionType.*;
 
