@@ -22,12 +22,7 @@ import java.time.Instant;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_id_seq_gen")
-    @SequenceGenerator(
-            name = "users_id_seq_gen",
-            sequenceName = "users_id_seq",
-            allocationSize = 1
-    )
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, length = 320)
