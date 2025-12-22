@@ -37,19 +37,14 @@ public class DirectMessageService {
         Page<User> contactsPage = userService.findContacts(user, pageable);
 
         List<ChatPreview> previews = contactsPage.getContent().stream()
-                .map(contact -> {
-                    Optional<DirectMessage> lastOpt =
-                            dmRepo.lastMessageNative(user.getId(), contact.getId());
-                    if (lastOpt.isEmpty()) {
-                        return new ChatPreview(contact.getUsername(),
-                                null,
-                                null, null);
-                    }
-                    DirectMessage dm = lastOpt.get();
-                    String lastText = dm.getContent();
-                    Instant ts = dm.getCreatedAt();
-                    return new ChatPreview(contact.getUsername(), lastText,LocalDateTime.ofInstant(ts, ZoneId.systemDefault()), dm.getSender().getUsername());
-                })
+                .map(contact -> dmRepo.lastMessageNative(user.getId(), contact.getId()).
+                        map( dm -> new ChatPreview(
+                                contact.getUsername(),
+                                dm.getContent(),
+                                LocalDateTime.ofInstant(dm.getCreatedAt(), ZoneId.systemDefault()),
+                                dm.getSender().getUsername()
+                        )))
+                .flatMap(Optional::stream)
                 .toList();
         return new PageImpl<>(previews, pageable, contactsPage.getTotalElements());
     }
