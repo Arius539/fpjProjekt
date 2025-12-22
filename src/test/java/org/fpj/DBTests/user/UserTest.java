@@ -1,5 +1,8 @@
 package org.fpj.DBTests.user;
 
+import org.fpj.payments.application.TransactionService;
+import org.fpj.payments.domain.Transaction;
+import org.fpj.payments.domain.TransactionRepository;
 import org.fpj.users.application.LoginService;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
@@ -18,6 +21,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -45,6 +49,8 @@ public class UserTest {
     @Autowired
     UserRepository userRepo;
     @Autowired
+    TransactionService transactionService;
+    @Autowired
     UserService userService;
     @Autowired
     LoginService loginService;
@@ -63,16 +69,18 @@ public class UserTest {
     }
 
     @Test
-    public void testLogin(){
+    public void testRegisterAndLogin(){
         loginService.register(USERNAME, PASSWORD, PASSWORD);
         loginService.login(USERNAME, PASSWORD);
 
         User user = context.getBean("loggedInUser", User.class);
+        BigDecimal balance = transactionService.computeBalance(user.getId());
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
         assertEquals(USERNAME.toLowerCase(), user.getUsername());
         assertTrue(passwordEncoder.matches(PASSWORD, user.getPasswordHash()));
+        assertEquals(0, balance.compareTo(BigDecimal.ZERO));
     }
 
     @Test
