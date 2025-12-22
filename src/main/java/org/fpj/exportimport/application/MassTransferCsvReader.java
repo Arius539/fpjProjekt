@@ -5,6 +5,7 @@ import com.univocity.parsers.common.record.Record;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Setter;
+import org.fpj.exceptions.CsvRowRejectedException;
 import org.fpj.util.UiHelpers;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.domain.CsvError;
@@ -70,14 +71,16 @@ public class MassTransferCsvReader implements CsvReader {
                 try {
                     MassTransfer eintrag = mapMassenUeberweisung(record, line, errors);
                     records.add(eintrag);
-                } catch (Exception ex) {
+                }
+                catch (CsvRowRejectedException e){
+                    //Der Error wurde bereits in Errors geloggt aber soll verhindern, dass eine nicht valider Eintrag in Records kommt
+                }
+                catch (Exception ex) {
                     errors.add(new CsvError(line, null, null, null, "Unerwarteter Fehler in dieser Zeile: " + ex.getMessage(), CsvError.Severity.ERROR));
                 }
             }
-
             boolean fatal = false;
             return new CsvImportResult<>(records, errors, fatal);
-
         } catch (TextParsingException tpe) {
             String message = "CSV-Strukturfehler: " + tpe.getMessage();
             CsvError fatalError = new CsvError(tpe.getLineIndex() + 1L, null, null, null, message, CsvError.Severity.FATAL);
@@ -117,11 +120,13 @@ public class MassTransferCsvReader implements CsvReader {
         validateEmpfaenger(empfaenger, line, errors);
 
         BigDecimal betrag = parseBigDecimal(rawBetrag, "Betrag", line, errors);
-
-        if (betrag != null && betrag.compareTo(BigDecimal.ZERO) <= 0) {
+        if (betrag == null) {
+            throw new CsvRowRejectedException("Ungültiger Betrag: " + rawBetrag);
+        }else if (betrag.compareTo(BigDecimal.ZERO) <= 0) {
             String msg = "Betrag muss größer als 0 sein";
             LOGGER.warn(msg);
             errors.add(new CsvError(line, "Betrag", null, rawBetrag, msg, CsvError.Severity.ERROR));
+            throw new CsvRowRejectedException(msg);
         }
 
         return new MassTransfer(empfaenger, betrag, beschreibung);
@@ -140,6 +145,7 @@ public class MassTransferCsvReader implements CsvReader {
             userService.findByUsername(empfaenger);
         } catch (IllegalArgumentException | DataNotPresentException e) {
             errors.add(new CsvError(line, "Empfänger", null, empfaenger, e.getMessage(), CsvError.Severity.ERROR));
+            throw new CsvRowRejectedException("Ungültiger Empfänger: " + empfaenger);
         }
     }
 
