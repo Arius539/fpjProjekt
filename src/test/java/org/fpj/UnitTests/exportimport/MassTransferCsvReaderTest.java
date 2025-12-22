@@ -59,10 +59,11 @@ public class MassTransferCsvReaderTest {
             MassTransfer firstMassTransfer = massTransfers.getFirst();
             MassTransfer lastMassTransfer = massTransfers.getLast();
 
-
             MassTransfer expectedFirst = new MassTransfer("anna.mueller@example.com", BigDecimal.valueOf(24.9), "Kaffee & Kuchen");
             MassTransfer expectedLast = new MassTransfer("oskar.mayer@example.net", BigDecimal.valueOf(199), "Kursgebühr");
 
+            assertTrue(result.getErrors().isEmpty());
+            assertEquals(20, massTransfers.size());
             assertEquals(expectedFirst, firstMassTransfer);
             assertEquals(expectedLast, lastMassTransfer);
         }
@@ -91,6 +92,7 @@ public class MassTransferCsvReaderTest {
             MassTransfer expectedLast = new MassTransfer("oskar.mayer@example.net", BigDecimal.valueOf(199), "Kursgebühr");
 
             assertEquals(3, errors.size());
+            assertEquals(17, massTransfers.size());
             assertEquals(expectedFirst, firstMassTransfer);
             assertEquals(expectedLast, lastMassTransfer);
             assertEquals(3L, firstError.getLine());

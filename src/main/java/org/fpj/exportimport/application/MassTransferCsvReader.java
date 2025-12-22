@@ -73,9 +73,10 @@ public class MassTransferCsvReader implements CsvReader {
                     records.add(eintrag);
                 }
                 catch (CsvRowRejectedException e){
-                    //Der Error wurde bereits in Errors geloggt aber soll verhindern, dass eine nicht valider Eintrag in Records kommt
+                    LOGGER.warn("Fehler in Zeile {} erkannt und protokolliert.", line);
                 }
                 catch (Exception ex) {
+                    LOGGER.error("Unerwarteter Fehler in Zeile {}.", line);
                     errors.add(new CsvError(line, null, null, null, "Unerwarteter Fehler in dieser Zeile: " + ex.getMessage(), CsvError.Severity.ERROR));
                 }
             }
