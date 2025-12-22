@@ -40,12 +40,6 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    /*
-    sollten wir doch lieber dynamisch laden, immer 100 am Stück, erst wenn der Nutzer es will oder?
-    @OneToMany(mappedBy = "wallComment", cascade = CascadeType.ALL)
-    private List<WallComment> wallComments;*/
-    //--> ja
-
     public User(final String username, final String passwordHash){
         this.username = username;
         this.passwordHash = passwordHash;

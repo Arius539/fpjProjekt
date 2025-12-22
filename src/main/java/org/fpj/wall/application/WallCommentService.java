@@ -11,16 +11,20 @@ import java.util.List;
 
 @Service
 public class WallCommentService {
-    @Autowired
-    private WallCommentRepository wallCommentRepository;
 
+    private final WallCommentRepository wallCommentRepo;
+
+    @Autowired
+    public WallCommentService(WallCommentRepository wallCommentRepo){
+        this.wallCommentRepo = wallCommentRepo;
+    }
 
     public Page<WallComment> getWallCommentsByAuthor(long userId,PageRequest pageRequest){
-        return wallCommentRepository.findByAuthor_IdOrderByCreatedAtDesc(userId,pageRequest);
+        return wallCommentRepo.findByAuthor_IdOrderByCreatedAtDesc(userId,pageRequest);
     }
 
     public Page<WallComment> getWallCommentsCreatedByWallOwner(long userId,PageRequest pageRequest){
-        return wallCommentRepository.findByWallOwner_IdOrderByCreatedAtDesc(userId,pageRequest);
+        return wallCommentRepo.findByWallOwner_IdOrderByCreatedAtDesc(userId,pageRequest);
     }
 
     public WallComment add(WallComment comment){
@@ -28,15 +32,16 @@ public class WallCommentService {
         if(comment.getAuthor() == null)throw new  IllegalArgumentException("Es ist ein Fehler beim laden der nötigen Informationen aufgetreten");
         if(comment.getWallOwner().getUsername().equals(comment.getAuthor().getUsername()))throw new  IllegalArgumentException("Du kannst nicht auf deiner eigenen Pinnwand kommentieren");
 
-        wallCommentRepository.save(comment);
+        wallCommentRepo.save(comment);
         return comment;
     }
 
     public List<WallComment> toListByAuthor(Long authorId) {
-        return wallCommentRepository.toListByAuthor(authorId);
+        return wallCommentRepo.toListByAuthor(authorId);
     }
 
     public List<WallComment> toListByWallOwner(Long ownerId) {
-        return wallCommentRepository.toListByWallOwner(ownerId);
+        return wallCommentRepo.toListByWallOwner(ownerId);
     }
+
 }

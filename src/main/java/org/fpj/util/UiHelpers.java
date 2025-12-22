@@ -27,8 +27,6 @@ public class UiHelpers {
     public static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(LOCAL_ZONE);
 
-    private static final NumberFormat EUR = NumberFormat.getCurrencyInstance(Locale.GERMANY);
-
     public static void isValidEmail(String email) {
         if (email == null) {
             String msg = "E-Mail bzw. der Benutzername darf nicht null sein.";
@@ -65,7 +63,7 @@ public class UiHelpers {
         if (email == null || email.isBlank()) {
            return  "Unbekannter Benutzer";
         }
-       return   email.split("@")[0];
+       return email.split("@")[0];
     }
 
     /** Entfernt alle leeren Zeilen und reduziert die Länge des Strings*/
@@ -82,6 +80,7 @@ public class UiHelpers {
         String result = sb.toString();
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
+
     /** Entfernt alle Zeilenumbrüche und reduziert die Länge des Strings*/
     public static String truncateFull(String s, int max) {
         if (s == null) return "";
@@ -99,6 +98,7 @@ public class UiHelpers {
         String result = sb.toString();
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
+
     /** überprüft ob amount in mit einer der möglichen / logischen Kombinationen mit formatAmound übereinstimmt*/
     public static boolean amountCheck(String amountIn, BigDecimal amountOut) {
         if (amountIn == null) return false;
