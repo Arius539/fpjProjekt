@@ -1,8 +1,6 @@
 package org.fpj.DBTests.user;
 
 import org.fpj.payments.application.TransactionService;
-import org.fpj.payments.domain.Transaction;
-import org.fpj.payments.domain.TransactionRepository;
 import org.fpj.users.application.LoginService;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
