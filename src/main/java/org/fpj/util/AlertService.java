@@ -11,13 +11,16 @@ import java.util.Optional;
 public class AlertService {
 
     public void info(String title, String header, String message) {
-        Platform.runLater(() -> {
+        Runnable show = () -> {
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle(title);
             alert.setHeaderText(header);
             alert.setContentText(message);
             alert.showAndWait();
-        });
+        };
+
+        if (Platform.isFxApplicationThread()) show.run();
+        else Platform.runLater(show);
     }
 
     public void info(String title, String message){
@@ -25,13 +28,16 @@ public class AlertService {
     }
 
     public void warn(String title, String header, String message) {
-        Platform.runLater(() -> {
+        Runnable show = () -> {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.setTitle(title);
             alert.setHeaderText(header);
             alert.setContentText(message);
             alert.showAndWait();
-        });
+        };
+
+        if (Platform.isFxApplicationThread()) show.run();
+        else Platform.runLater(show);
     }
 
     public void warn(String header, String message){
@@ -39,13 +45,16 @@ public class AlertService {
     }
 
     public void error(String title, String header, String message) {
-        Platform.runLater(() -> {
+        Runnable show = () -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
             alert.setHeaderText(header);
             alert.setContentText(message);
             alert.showAndWait();
-        });
+        };
+
+        if (Platform.isFxApplicationThread()) show.run();
+        else Platform.runLater(show);
     }
 
     public void error(String header, String message){
