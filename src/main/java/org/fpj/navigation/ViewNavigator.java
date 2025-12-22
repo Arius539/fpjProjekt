@@ -144,7 +144,7 @@ public class ViewNavigator {
     }
 
     public void loadLogin() throws IOException {
-        loadView("login", "login.fxml", "PayTalk: Login", 400, 400, true, null);
+        loadView("login", "login.fxml", "PayTalk: Login", 400, 400, false, null);
     }
 
     public void closeLogin() {
