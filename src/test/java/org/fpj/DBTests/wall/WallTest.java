@@ -40,9 +40,9 @@ public class WallTest {
     }
 
     @Autowired
-    WallCommentRepository wallCommentRepository;
+    WallCommentRepository wallCommentRepo;
     @Autowired
-    UserRepository userRepository;
+    UserRepository userRepo;
     @Autowired
     WallCommentService wallCommentService;
 
@@ -56,16 +56,16 @@ public class WallTest {
 
     @BeforeEach
     public void setUp(){
-        wallCommentRepository.deleteAll();
-        userRepository.deleteAll();
+        wallCommentRepo.deleteAll();
+        userRepo.deleteAll();
 
         User user1 = new User(USERNAME1, "password123");
         User user2 = new User(USERNAME2, "password456");
         User user3 = new User(USERNAME3, "password789");
 
-        u1 = userRepository.save(user1);
-        u2 = userRepository.save(user2);
-        u3 = userRepository.save(user3);
+        u1 = userRepo.save(user1);
+        u2 = userRepo.save(user2);
+        u3 = userRepo.save(user3);
     }
 
     @Test

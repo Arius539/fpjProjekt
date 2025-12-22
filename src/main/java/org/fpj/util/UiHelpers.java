@@ -6,14 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.NumberFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Locale;
 
 public class UiHelpers {
 
@@ -26,8 +23,6 @@ public class UiHelpers {
 
     public static final DateTimeFormatter DATE_FMT =
             DateTimeFormatter.ofPattern("yyyy-MM-dd").withZone(LOCAL_ZONE);
-
-    private static final NumberFormat EUR = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     public static void isValidEmail(String email) {
         if (email == null) {
@@ -65,12 +60,12 @@ public class UiHelpers {
         if (email == null || email.isBlank()) {
            return  "Unbekannter Benutzer";
         }
-       return   email.split("@")[0];
+       return email.split("@")[0];
     }
 
     /** Entfernt alle leeren Zeilen und reduziert die Länge des Strings*/
     public static String truncate(String s, int max) {
-        if (s == null) return "";
+        if (s == null || max <= 0) return "";
         StringBuilder sb = new StringBuilder();
         String[] lines = s.split("\\R");
         for (String line : lines) {
@@ -82,6 +77,7 @@ public class UiHelpers {
         String result = sb.toString();
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
+
     /** Entfernt alle Zeilenumbrüche und reduziert die Länge des Strings*/
     public static String truncateFull(String s, int max) {
         if (s == null) return "";
@@ -99,30 +95,31 @@ public class UiHelpers {
         String result = sb.toString();
         return result.length() <= max ? result : result.substring(0, max) + "…";
     }
+
     /** überprüft ob amount in mit einer der möglichen / logischen Kombinationen mit formatAmound übereinstimmt*/
     public static boolean amountCheck(String amountIn, BigDecimal amountOut) {
         if (amountIn == null) return false;
         BigDecimal v = (amountOut != null ? amountOut : BigDecimal.ZERO);
 
         String[] candidates = {
-                formatAmount(v, false, true,  false, ',', true,  '\0', false), // 1.234,57
-                formatAmount(v, false, true,  false, ',', false, '\0', false), // 1234,57
-                formatAmount(v, false, true,  false, ',', false, '\0', true), // 1234
+                formatAmount(v, false, true,  false, ',', true,  '\0', false),
+                formatAmount(v, false, true,  false, ',', false, '\0', false),
+                formatAmount(v, false, true,  false, ',', false, '\0', true),
 
-                formatAmount(v, false, true,  false, '.', false, '\0', false), // 1234.57
-                formatAmount(v, false, true,  false, '.', true,  '\0', false), // 1,234.57
+                formatAmount(v, false, true,  false, '.', false, '\0', false),
+                formatAmount(v, false, true,  false, '.', true,  '\0', false),
 
-                formatAmount(v, false, true,  true,  ',', true,  '\0', false), // 1.234,57 €
-                formatAmount(v, false, true,  true,  '.', true,  '\0', false), // 1,234.57 €
-                formatAmount(v, false, true,  true,  ',', false,  '\0', true), // 1234 €
+                formatAmount(v, false, true,  true,  ',', true,  '\0', false),
+                formatAmount(v, false, true,  true,  '.', true,  '\0', false),
+                formatAmount(v, false, true,  true,  ',', false,  '\0', true),
 
-                formatAmount(v, true,  true,  true,  ',', true,  '\0', false), // +1.234,57 €
-                formatAmount(v, true,  true,  true,  '.', true,  '\0', false), // +1,234.57 €
+                formatAmount(v, true,  true,  true,  ',', true,  '\0', false),
+                formatAmount(v, true,  true,  true,  '.', true,  '\0', false),
 
-                formatAmount(v, false, true,  false, ',', true,  '.',  true),  // 1.235
-                formatAmount(v, false, true,  false, '.', true,  ',',  true),  // 1,235
-                formatAmount(v, false, true,  true,  ',', true,  '.',  true),  // 1.235 €
-                formatAmount(v, false, true,  true,  '.', true,  ',',  true)   // 1,235 €
+                formatAmount(v, false, true,  false, ',', true,  '.',  true),
+                formatAmount(v, false, true,  false, '.', true,  ',',  true),
+                formatAmount(v, false, true,  true,  ',', true,  '.',  true),
+                formatAmount(v, false, true,  true,  '.', true,  ',',  true)
         };
 
         for (String c : candidates) {
@@ -213,11 +210,13 @@ public class UiHelpers {
                 DateTimeFormatter.ofPattern("d.M.yy")
         };
 
-        for (DateTimeFormatter formatter : formatters) {
+        for (int i = 0; i < formatters.length; i++){
             try {
-                return LocalDate.parse(text, formatter);
+                return LocalDate.parse(text, formatters[i]);
             } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");
+                if (i == formatters.length-1){
+                    throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");
+                }
             }
         }
         throw new IllegalArgumentException("Bitte ein gültiges Datum eingeben, z.B. 16.11.2025 oder 2025-11-16");

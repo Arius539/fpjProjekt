@@ -22,11 +22,15 @@ import java.util.Optional;
 
 @Service
 public class DirectMessageService {
-    @Autowired
-    private DirectMessageRepository dmRepo;
+
+    private final DirectMessageRepository dmRepo;
+    private final UserService userService;
 
     @Autowired
-    private UserService userService;
+    public DirectMessageService(DirectMessageRepository dmRepo, UserService userService){
+        this.dmRepo = dmRepo;
+        this.userService = userService;
+    }
 
     @Transactional(readOnly = true)
     public Page<ChatPreview> getChatPreviews(User user, Pageable pageable) {
@@ -64,6 +68,5 @@ public class DirectMessageService {
     public List<DirectMessage> getConversationMessageList(Long userId1, Long userId2){
         return this.dmRepo.findConversationAsList(userId1, userId2);
     }
-
 
 }

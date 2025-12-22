@@ -94,7 +94,6 @@ public class WallCommentViewController {
         this.wallCommentService = wallCommentService;
         this.userService = userService;
         this.alertService = alertService;
-
     }
 
     // <editor-fold defaultstate="collapsed" desc="initialize">
