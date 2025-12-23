@@ -24,7 +24,7 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 ## Setup & Start
 - Das zip-Projekt muss entpackt und in eine IDE importiert werden
 - das Maven Projekt muss geladen werden (in IntelliJ kommt ein Hinweis mit "Load Maven Project")
-- Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder:
+- Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder im Terminal:
 ```bash
 mvn spring-boot:run
 ```
