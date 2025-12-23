@@ -27,5 +27,7 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 - Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder:
 ```bash
 mvn spring-boot:run
+```
 Wenn JavaFX bei diesem Befehl Probleme macht dann:
+```bash
 mvn javafx:run
