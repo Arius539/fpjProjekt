@@ -18,7 +18,7 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 ## Voraussetzungen
 - Java 23
 - PostgreSQL 
-- Maven (maven wrapper enthalten)
+- Maven (maven wrapper enthalten) statt Gradle
 - Docker zum Ausführen von DB-Integrationstests. Die Docker Engine muss gestartet werden, bevor die Tests ausgeführt werden.
 
 ## Setup & Start
