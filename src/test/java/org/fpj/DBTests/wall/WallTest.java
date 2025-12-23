@@ -69,7 +69,7 @@ public class WallTest {
     }
 
     @Test
-    public void testToListByAuthor(){
+    public void testFindWallcommentsByAuthor(){
         WallComment comment1 = new WallComment(null, u1, u2, "Schönes T-Shirt", null);
         WallComment comment2 = new WallComment(null, u3, u2, "Abzocke", null);
         WallComment comment3 = new WallComment(null, u2, u3, "Irgendwas", null);
@@ -90,7 +90,7 @@ public class WallTest {
     }
 
     @Test
-    public void testToListByWallOwner(){
+    public void testFindWallcommentsByWallOwner(){
         WallComment comment1 = new WallComment(null, u1, u2, "Schönes T-Shirt", null);
         WallComment comment2 = new WallComment(null, u3, u2, "Abzocke", null);
         WallComment comment3 = new WallComment(null, u1, u3, "Irgendwas", null);

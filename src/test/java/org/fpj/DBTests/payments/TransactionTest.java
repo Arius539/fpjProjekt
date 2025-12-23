@@ -144,7 +144,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testFindLiteItemsForUser(){
+    public void testFindTransactionsForUser(){
         BigDecimal amount1 = BigDecimal.valueOf(30);
         BigDecimal amount2 = BigDecimal.valueOf(40);
         TransactionLite transactionLite1 = new TransactionLite(amount1, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
@@ -173,7 +173,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testTransactionsForUserAsList(){
+    public void testFindTransactionsForUserAsList(){
         BigDecimal amount1 = BigDecimal.valueOf(30);
         BigDecimal amount2 = BigDecimal.valueOf(40);
         TransactionLite transactionLite1 = new TransactionLite(amount1, TransactionType.EINZAHLUNG, null, USERNAME1, SUBJECT);
