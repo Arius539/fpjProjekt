@@ -89,7 +89,7 @@ public class DirectMessageTest {
     }
 
     @Test
-    public void testAddDirectMessage(){
+    public void testWriteMessage(){
         DirectMessageRow dm1 = new DirectMessageRow(currentUser, contact1, TEXT1);
         DirectMessage dmAdded = directMessageService.addDirectMessage(dm1);
 
@@ -99,7 +99,7 @@ public class DirectMessageTest {
     }
 
     @Test
-    public void testGetChatPreviews(){
+    public void testSeeChatPreviews(){
         makeContacts();
         PageRequest pageRequest = PageRequest.of(0, 5);
 

@@ -82,7 +82,7 @@ public class UserTest {
     }
 
     @Test
-    public void testUsernameContaining(){
+    public void testFindUsernamesContaining(){
         loginService.register(USERNAME, PASSWORD, PASSWORD);
         loginService.register(USERNAME2, PASSWORD, PASSWORD);
         loginService.register(USERNAME3, PASSWORD, PASSWORD);
