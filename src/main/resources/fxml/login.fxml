@@ -8,6 +8,8 @@
             fx:controller="org.fpj.javafxcontroller.LoginController"
             spacing="10" alignment="CENTER" styleClass="rootDark" stylesheets="@/styles/loginWindow.css">
 
+    <Label fx:id="pwRulesLbl" text="Passwort-Anforderungen: mind. 8 Zeichen; jeweils mind. 1 Großbuchstabe, 1 Kleinbuchstabe, 1 Ziffer, 1 Sonderzeichen"
+           visible="false" wrapText="true" maxWidth="Infinity" VBox.vgrow="ALWAYS"/>
     <TextField fx:id="usernameInput" promptText="Username" alignment="CENTER"/>
     <PasswordField fx:id="passwordInput" promptText="Passwort" alignment="CENTER"/>
     <PasswordField fx:id="passwordCheck" promptText="Passwort wiederholen" alignment="CENTER" visible="false"/>

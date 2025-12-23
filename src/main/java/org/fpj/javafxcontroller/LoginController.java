@@ -3,6 +3,7 @@ package org.fpj.javafxcontroller;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import lombok.Setter;
@@ -39,6 +40,8 @@ public class LoginController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LoginController.class);
 
+    @FXML
+    private Label pwRulesLbl;
     @FXML
     private TextField usernameInput;
     @FXML
@@ -97,10 +100,12 @@ public class LoginController {
             loginButton.setText(REGISTER_STRING);
             toggleButton.setText(ACCOUNT_EXISTENT);
             passwordCheck.setVisible(true);
+            pwRulesLbl.setVisible(true);
         } else {
             loginButton.setText(LOGIN_STRING);
             toggleButton.setText(NO_ACCOUNT);
             passwordCheck.setVisible(false);
+            pwRulesLbl.setVisible(false);
         }
     }
 }
