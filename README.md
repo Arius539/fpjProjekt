@@ -25,6 +25,7 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 - Das zip-Projekt muss entpackt und in eine IDE importiert werden
 - das Maven Projekt muss geladen werden (in IntelliJ kommt ein Hinweis mit "Load Maven Project")
 - mit den Credentials in der Datenbank einloggen oder mit den Dateien im Ordner src/main/resources/abgabezusatz die DB selbst aufsetzen
+- (In der DML existieren bereits 3 User, mit denen interagiert werden kann. Sind diese nicht gewollt, kann nur das DDL-Skript ausgeführt werden.)
 - wenn nicht die oben angegebene DB verwendet wird, müssen die DB-Properties/ -Credentials in der Datei src/main/resources/application.properties entsprechend verändert werden
 - Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder im Terminal:
 ```bash
