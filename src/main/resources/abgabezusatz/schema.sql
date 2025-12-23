@@ -214,7 +214,6 @@ CREATE TABLE public.users (
     username character varying(320) NOT NULL,
     password_hash character varying(255) NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    CONSTRAINT users_username_email_chk CHECK (((username)::text ~ '^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$'::text)),
     CONSTRAINT users_username_lowercase_chk CHECK (((username)::text = lower((username)::text)))
 );
 
