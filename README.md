@@ -1,6 +1,6 @@
 # Bezahl- und Kommunikationsplatform
 
-Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinnwandnachrichten.
+Eine Anwendung zum Versenden von virtuellem Geld und Schreiben von Direkt- und Pinnwandnachrichten.
 
 ## Gruppenmitglieder
 - Hillenbrand, Arndt-Marius
@@ -8,7 +8,7 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 - Niedens, Vadim
 - Renz, Daniel
 
-## DB-Credentials
+## DB-Credentials (zur von Ihnen bereitgestellten DB)
 - Host: kdb.sh
 - Port: 6082
 - Nutzer: fpj_2025_g1
