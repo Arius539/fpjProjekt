@@ -24,10 +24,12 @@ Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinn
 ## Setup & Start
 - Das zip-Projekt muss entpackt und in eine IDE importiert werden
 - das Maven Projekt muss geladen werden (in IntelliJ kommt ein Hinweis mit "Load Maven Project")
+- mit den Credentials in der Datenbank einloggen oder mit den Dateien im Ordner src/main/resources/abgabezusatz die DB selbst aufsetzen
+- wenn nicht die oben angegebene DB verwendet wird, müssen die DB-Properties/ -Credentials in der Datei src/main/resources/application.properties entsprechend verändert werden
 - Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder im Terminal:
 ```bash
 mvn spring-boot:run
 ```
-Wenn JavaFX bei diesem Befehl Probleme macht dann:
+Wenn JavaFX bei diesem Befehl Probleme macht, dann ersatzweise dieser Befehl:
 ```bash
 mvn javafx:run
