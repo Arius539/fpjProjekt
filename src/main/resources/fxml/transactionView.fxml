@@ -69,7 +69,7 @@
 
                         <VBox spacing="2.0"
                               styleClass="card">
-                            <Label text="Kontostand"
+                            <Label text="Kontostand nach TA"
                                    wrapText="true"
                                    styleClass="card-title"/>
                             <Label fx:id="selectedTransactionBalanceLabel"
