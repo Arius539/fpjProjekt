@@ -1,0 +1,31 @@
+# Bezahl- und Kommunikationsplatform
+
+Eine Anwendung zum Versenden von virtuellem Geld, Schreiben von Direkt- und Pinnwandnachrichten.
+
+## Gruppenmitglieder
+- Hillenbrand, Arndt-Marius
+- Kirchner, Colin
+- Niedens, Vadim
+- Renz, Daniel
+
+## DB-Credentials
+- Host: kdb.sh
+- Port: 6082
+- Nutzer: fpj_2025_g1
+- Datenbank: fpj_2025_g1
+- Passwort: modulFPJ_Projekt_813
+
+## Voraussetzungen
+- Java 23
+- PostgreSQL 
+- Maven (maven wrapper enthalten)
+- Docker zum Ausführen von DB-Integrationstests. Die Docker Engine muss gestartet werden, bevor die Tests ausgeführt werden.
+
+## Setup & Start
+- Das zip-Projekt muss entpackt und in eine IDE importiert werden
+- das Maven Projekt muss geladen werden (in IntelliJ kommt ein Hinweis mit "Load Maven Project")
+- Zum Starten der App muss der Play-Button der Klasse App.java gedrückt werden, oder:
+```bash
+mvn spring-boot:run
+Wenn JavaFX bei diesem Befehl Probleme macht dann:
+mvn javafx:run
