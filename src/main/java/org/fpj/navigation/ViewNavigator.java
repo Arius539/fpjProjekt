@@ -6,8 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -193,12 +191,11 @@ public class ViewNavigator {
 
         applyThemeIfAttached(ownerWindow, root);
 
-        Node overlayShell = buildOverlayShell(ownerKey, viewKey, root);
-        overlayHost.getChildren().add(overlayShell);
-        overlayShell.toFront();
+        overlayHost.getChildren().add(root);
+        root.toFront();
 
         if (controllerType == null) {
-            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, null));
+            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, null));
             return new NavigationResponse<>(null, false);
         }
 
@@ -209,32 +206,8 @@ public class ViewNavigator {
         }
 
         T typedController = controllerType.cast(controller);
-        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, typedController));
+        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, typedController));
         return new NavigationResponse<>(typedController, false);
-    }
-
-    private Node buildOverlayShell(String ownerKey, String viewKey, Parent content) {
-        StackPane shell = new StackPane();
-        shell.setPickOnBounds(true);
-        shell.setStyle("-fx-background-color: rgba(0,0,0,0.35);");
-
-        StackPane card = new StackPane(content);
-        card.setMaxWidth(980);
-        card.setMaxHeight(640);
-        card.getStyleClass().add("card");
-        card.setStyle("-fx-background-color: -fx-background;");
-        StackPane.setAlignment(card, Pos.CENTER);
-        StackPane.setMargin(card, new Insets(24));
-
-        Button closeButton = new Button("✕");
-        closeButton.setOnAction(event -> closeEmbeddedView(ownerKey, viewKey));
-        closeButton.setFocusTraversable(false);
-        closeButton.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(32, 32, 0, 0));
-
-        shell.getChildren().addAll(card, closeButton);
-        return shell;
     }
 
     private Optional<String> resolveWindowKey(Window window) {
