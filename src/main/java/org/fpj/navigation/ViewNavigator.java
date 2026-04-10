@@ -6,12 +6,6 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -197,12 +191,11 @@ public class ViewNavigator {
 
         applyThemeIfAttached(ownerWindow, root);
 
-        Node overlayShell = buildOverlayShell(ownerKey, viewKey, root);
-        overlayHost.getChildren().add(overlayShell);
-        overlayShell.toFront();
+        overlayHost.getChildren().add(root);
+        root.toFront();
 
         if (controllerType == null) {
-            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, null));
+            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, null));
             return new NavigationResponse<>(null, false);
         }
 
@@ -213,39 +206,8 @@ public class ViewNavigator {
         }
 
         T typedController = controllerType.cast(controller);
-        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, typedController));
+        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, typedController));
         return new NavigationResponse<>(typedController, false);
-    }
-
-    private Node buildOverlayShell(String ownerKey, String viewKey, Parent content) {
-        StackPane shell = new StackPane();
-        shell.setPickOnBounds(true);
-        shell.setStyle("-fx-background-color: rgba(0,0,0,0.35);");
-
-        BorderPane card = new BorderPane();
-        card.setMaxWidth(980);
-        card.setMaxHeight(640);
-        card.getStyleClass().addAll("card");
-        card.setStyle("-fx-background-color: -fx-background;");
-
-        Button closeButton = new Button("✕");
-        closeButton.setOnAction(event -> closeEmbeddedView(ownerKey, viewKey));
-        closeButton.setFocusTraversable(false);
-
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        HBox topBar = new HBox(spacer, closeButton);
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        topBar.setPadding(new Insets(8, 8, 0, 8));
-
-        card.setTop(topBar);
-        card.setCenter(content);
-        BorderPane.setMargin(content, new Insets(4, 8, 8, 8));
-
-        StackPane.setAlignment(card, Pos.CENTER);
-        shell.getChildren().add(card);
-        return shell;
     }
 
     private Optional<String> resolveWindowKey(Window window) {
