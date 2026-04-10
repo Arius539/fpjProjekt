@@ -120,7 +120,8 @@ public class CsvImportDialogController<E> {
             CsvImportResult<E> result = importTask.getValue();
             if (result.getErrors().isEmpty()) {
                 csvImportConsumer.accept(result.getRecords());
-                this.viewNavigator.closeCsvDialog();
+                Window window = chooseFileButton.getScene().getWindow();
+                this.viewNavigator.closeCsvDialog(window);
             } else {
                 errorList.addAll(result.getErrors());
             }
