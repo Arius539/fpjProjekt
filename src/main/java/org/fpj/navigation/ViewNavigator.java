@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -191,11 +193,12 @@ public class ViewNavigator {
 
         applyThemeIfAttached(ownerWindow, root);
 
-        overlayHost.getChildren().add(root);
-        root.toFront();
+        Node overlayShell = buildOverlayShell(ownerKey, viewKey, root);
+        overlayHost.getChildren().add(overlayShell);
+        overlayShell.toFront();
 
         if (controllerType == null) {
-            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, null));
+            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, null));
             return new NavigationResponse<>(null, false);
         }
 
@@ -206,8 +209,40 @@ public class ViewNavigator {
         }
 
         T typedController = controllerType.cast(controller);
-        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(root, typedController));
+        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, typedController));
         return new NavigationResponse<>(typedController, false);
+    }
+
+    private Node buildOverlayShell(String ownerKey, String viewKey, Parent content) {
+        StackPane shell = new StackPane();
+        shell.setPickOnBounds(true);
+        shell.setStyle("-fx-background-color: rgba(0,0,0,0.35);");
+
+        StackPane card = new StackPane(content);
+        card.setMaxWidth(980);
+        card.setMaxHeight(640);
+        card.getStyleClass().add("card");
+        card.setStyle("-fx-background-color: -fx-background;");
+        StackPane.setAlignment(card, Pos.CENTER);
+        StackPane.setMargin(card, new Insets(24));
+
+        Button closeButton = new Button("Schließen");
+        closeButton.setOnAction(event -> closeEmbeddedView(ownerKey, viewKey));
+        closeButton.setFocusTraversable(false);
+        closeButton.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-background-color: #e74c3c; -fx-text-fill: white;");
+        StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
+        StackPane.setMargin(closeButton, new Insets(32, 32, 0, 0));
+        closeButton.toFront();
+
+        shell.getChildren().addAll(card, closeButton);
+        shell.setOnKeyPressed(event -> {
+            switch (event.getCode()) {
+                case ESCAPE -> closeEmbeddedView(ownerKey, viewKey);
+                default -> {
+                }
+            }
+        });
+        return shell;
     }
 
     private Optional<String> resolveWindowKey(Window window) {
