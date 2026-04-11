@@ -9,7 +9,7 @@
             fx:controller="org.fpj.javafxcontroller.CsvImportDialogController"
             prefWidth="800.0" prefHeight="520.0"
             minWidth="480.0" minHeight="260.0"
-            styleClass="rootDark"
+            styleClass="app-root-surface"
             stylesheets="@/styles/transactionView.css">
 
     <center>

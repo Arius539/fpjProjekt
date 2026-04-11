@@ -9,7 +9,7 @@
             fx:controller="org.fpj.javafxcontroller.ChatWindowController"
             prefWidth="800"
             prefHeight="600"
-            styleClass="rootDark"
+            styleClass="app-root-surface"
             stylesheets="@/styles/chatWindowStyles.css">
     <top>
         <HBox spacing="12" styleClass="chat-header">

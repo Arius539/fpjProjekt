@@ -592,6 +592,11 @@ public class TransactionViewController {
     }
 
     @FXML
+    private void onBackToMainView() {
+        viewNavigator.showMainView();
+    }
+
+    @FXML
     private void onReloadBatches() {
         updateBalances();
     }

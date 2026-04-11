@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.application.Platform;
 import org.fpj.util.AlertService;
@@ -44,7 +45,7 @@ public class MainViewController {
     private StackPane messageLayer;
 
     @FXML
-    private HBox dashboardContent;
+    private GridPane mainViewContent;
 
     private User currentUser;
 
@@ -70,7 +71,7 @@ public class MainViewController {
         lblEmail.setText(currentUser.getUsername());
         transactionsLiteController.initialize(currentUser, this::updateBalanceLabel);
         chatPreviewController.initialize(currentUser);
-        Platform.runLater(() -> viewNavigator.registerMainWindowLayers("main", mainContentLayer, overlayLayer, messageLayer, dashboardContent));
+        Platform.runLater(() -> viewNavigator.registerMainWindowLayers("main", mainContentLayer, overlayLayer, messageLayer, mainViewContent));
 
         boolean isDark = !viewNavigator.isWhiteMode();
         themeButton.setSelected(isDark);
@@ -97,11 +98,6 @@ public class MainViewController {
         }catch (Exception e){
             this.alertService.error( "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
         }
-    }
-
-    @FXML
-    public void actionDashboard() {
-        viewNavigator.showMainDashboard();
     }
 
     @FXML

@@ -9,7 +9,7 @@
             fx:controller="org.fpj.javafxcontroller.WallCommentViewController"
             prefWidth="1280.0" prefHeight="720.0"
             minWidth="1280.0" minHeight="720.0"
-            styleClass="rootDark"
+            styleClass="app-root-surface"
             stylesheets="@/styles/wallCommentView.css">
 
     <top>
@@ -19,6 +19,15 @@
             <padding>
                 <Insets top="20" right="20" bottom="10" left="20"/>
             </padding>
+
+            <HBox alignment="CENTER_LEFT"
+                  styleClass="view-header-bar">
+                <Button text="← Zurück"
+                        onAction="#onBackToMainView"
+                        styleClass="view-back-button"/>
+                <Label text="Pinnwand"
+                       styleClass="card-title"/>
+            </HBox>
 
             <fx:define>
                 <ToggleGroup fx:id="commentFilterToggleGroup"/>

@@ -7,11 +7,11 @@
 <StackPane xmlns="http://javafx.com/javafx/23"
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="org.fpj.javafxcontroller.mainView.MainViewController"
-          styleClass="rootDark"
+          styleClass="app-root-surface"
           stylesheets="@/styles/mainViewStyles.css">
 
     <StackPane fx:id="mainContentLayer" pickOnBounds="true">
-        <GridPane hgap="12" vgap="12">
+        <GridPane fx:id="mainViewContent" hgap="12" vgap="12">
             <padding>
                 <Insets topRightBottomLeft="12"/>
             </padding>
@@ -55,13 +55,12 @@
                         <Label text="Aktionen" styleClass="card-title"/>
                         <Button text="Meine Transaktionen" onAction="#actionTransactions"/>
                         <Button text="Meine Pinnwand" onAction="#actionWallComments"/>
-                        <Button text="Dashboard" onAction="#actionDashboard"/>
                         <Region VBox.vgrow="ALWAYS"/>
                     </VBox>
                 </StackPane>
             </VBox>
 
-            <HBox fx:id="dashboardContent" GridPane.columnIndex="1" spacing="12">
+            <HBox GridPane.columnIndex="1" spacing="12">
                 <fx:include source="/fxml/mainview/transactionViewLite.fxml" fx:id="transactionsPanel" HBox.hgrow="ALWAYS"/>
                 <fx:include source="/fxml/mainview/chatPreviewView.fxml" fx:id="chatsPanel" HBox.hgrow="ALWAYS"/>
             </HBox>

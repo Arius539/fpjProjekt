@@ -15,7 +15,7 @@
       fx:controller="org.fpj.javafxcontroller.TransactionDetailController"
       alignment="CENTER"
       spacing="24"
-      styleClass="rootDark"
+      styleClass="app-root-surface"
       stylesheets="@/styles/transactionDetail.css">
 
     <padding>

@@ -2,7 +2,8 @@
 Ki generiert
 */
 
-.root {
+.root,
+.theme-root {
     -c-brand:        #0F61A8;
     -c-brand-dark:   #094272;
     -c-bg:           #F3F6FA;
@@ -18,12 +19,31 @@ Ki generiert
     -fx-accent:            -c-brand;
     -fx-focus-color:       -c-brand;
     -fx-faint-focus-color: rgba(15, 97, 168, 0.25);
-    -fx-background-color: -c-bg;
 }
 
 /* =========================
    Farbvariablen (Dark Mode)
    ========================= */
+.theme-dark {
+    -c-brand:        #0F61A8;
+    -c-brand-dark:   #094272;
+    -c-bg:           #151A1F;
+    -c-surface:      #20262D;
+    -c-surface-alt:  #232B34;
+    -c-on-brand:     #FFFFFF;
+    -c-text:         #F5F6FA;
+    -c-text-muted:   #A0AEC0;
+    -c-border:       #27303A;
+    -c-shadow:       rgba(0, 0, 0, 0.32);
+
+    -fx-faint-focus-color: rgba(15, 97, 168, 0.18);
+}
+
+.app-root-surface {
+    -fx-background-color: -c-bg;
+}
+
+/* Legacy alias for views that still use the old class name. */
 .rootDark {
     -c-brand:        #0F61A8;
     -c-brand-dark:   #094272;
@@ -394,6 +414,34 @@ Ki generiert
 .button-text:hover {
     -fx-text-fill: -c-brand-dark;
     -fx-underline: true;
+}
+
+.view-header-bar {
+    -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 10;
+}
+
+.view-back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: -c-brand;
+    -fx-border-color: -c-border;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-font-size: 13px;
+    -fx-font-weight: 600;
+    -fx-padding: 6 14;
+}
+
+.view-back-button:hover {
+    -fx-background-color: -c-brand;
+    -fx-text-fill: -c-on-brand;
+    -fx-border-color: -c-brand;
+}
+
+.view-back-button:pressed {
+    -fx-background-color: -c-brand-dark;
+    -fx-text-fill: -c-on-brand;
+    -fx-border-color: -c-brand-dark;
 }
 
 .radio-button {

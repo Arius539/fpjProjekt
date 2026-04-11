@@ -24,6 +24,7 @@ import org.fpj.util.UiHelpers;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.application.WallCommentCsvExporter;
 import org.fpj.exportimport.application.FileHandling;
+import org.fpj.navigation.ViewNavigator;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.fpj.wall.application.WallCommentService;
@@ -49,6 +50,7 @@ public class WallCommentViewController {
     private final WallCommentService wallCommentService;
     private final UserService userService;
     private final AlertService alertService;
+    private final ViewNavigator viewNavigator;
     private final WallCommentCsvExporter wallCommentCsvExporter = new WallCommentCsvExporter();
 
     @FXML
@@ -90,10 +92,11 @@ public class WallCommentViewController {
     private AutoCompletionBinding<String> autoCompletionBinding;
 
     @Autowired
-    public WallCommentViewController(WallCommentService wallCommentService, UserService userService, AlertService alertService) {
+    public WallCommentViewController(WallCommentService wallCommentService, UserService userService, AlertService alertService, ViewNavigator viewNavigator) {
         this.wallCommentService = wallCommentService;
         this.userService = userService;
         this.alertService = alertService;
+        this.viewNavigator = viewNavigator;
     }
 
     // <editor-fold defaultstate="collapsed" desc="initialize">
@@ -228,6 +231,11 @@ public class WallCommentViewController {
     @FXML
     private void onReloadWall() {
         reloadComments();
+    }
+
+    @FXML
+    private void onBackToMainView() {
+        viewNavigator.showMainView();
     }
 
     @FXML

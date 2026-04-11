@@ -93,7 +93,7 @@ public class ViewNavigator {
         }
     }
 
-    public void showMainDashboard() {
+    public void showMainView() {
         WindowLayers layers = requireWindowLayers(MAIN_WINDOW_KEY);
         Node defaultContent = layers.defaultMainContent();
         if (defaultContent == null) {
@@ -375,14 +375,7 @@ public class ViewNavigator {
     }
 
     private void applyThemeToNode(Node node) {
-        if (!(node instanceof Parent parent)) {
-            return;
-        }
-
-        parent.getStyleClass().remove("rootDark");
-        if (!isWhiteMode && !parent.getStyleClass().contains("rootDark")) {
-            parent.getStyleClass().add("rootDark");
-        }
+        ThemeStyleManager.applyTo(node, !isWhiteMode);
     }
 
     private void addIconsToList() {

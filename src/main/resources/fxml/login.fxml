@@ -6,7 +6,7 @@
 <VBox xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.fpj.javafxcontroller.LoginController"
-            spacing="10" alignment="CENTER" styleClass="rootDark" stylesheets="@/styles/loginWindow.css">
+            spacing="10" alignment="CENTER" styleClass="app-root-surface" stylesheets="@/styles/loginWindow.css">
 
     <Label fx:id="pwRulesLbl" text="Passwort-Anforderungen: mind. 8 Zeichen; jeweils mind. 1 Großbuchstabe, 1 Kleinbuchstabe, 1 Ziffer, 1 Sonderzeichen"
            visible="false" wrapText="true" maxWidth="Infinity" VBox.vgrow="ALWAYS"/>
