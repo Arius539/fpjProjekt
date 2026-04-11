@@ -1,22 +1,22 @@
 package org.fpj.navigation;
 
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.Window;
 import lombok.Getter;
+import org.fpj.javafxcontroller.ChatWindowController;
+import org.fpj.javafxcontroller.CsvImportDialogController;
+import org.fpj.javafxcontroller.TransactionDetailController;
 import org.fpj.javafxcontroller.TransactionViewController;
 import org.fpj.javafxcontroller.WallCommentViewController;
-import org.fpj.javafxcontroller.ChatWindowController;
-import org.fpj.javafxcontroller.TransactionDetailController;
-import org.fpj.javafxcontroller.CsvImportDialogController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -32,11 +32,15 @@ import java.util.Optional;
 @Component
 public class ViewNavigator {
 
+    private static final String MAIN_WINDOW_KEY = "main";
+
     private final ApplicationContext context;
-    private final Map<String, NavigationContext> openWindows = new HashMap<>();
-    private final Map<String, StackPane> overlayHosts = new HashMap<>();
-    private final Map<String, EmbeddedNavigationContext> openEmbeddedViews = new HashMap<>();
+    private final Map<String, NavigationContext<?>> openWindows = new HashMap<>();
+    private final Map<String, WindowLayers> registeredWindowLayers = new HashMap<>();
+    private final Map<String, EmbeddedNavigationContext<?>> contentViews = new HashMap<>();
+    private final Map<String, EmbeddedNavigationContext<?>> overlayViews = new HashMap<>();
     private final ArrayList<Image> appIcons;
+
     @Getter
     private boolean isWhiteMode = false;
 
@@ -49,73 +53,109 @@ public class ViewNavigator {
 
     public void setWhiteMode(boolean whiteMode) {
         this.isWhiteMode = whiteMode;
-        for (NavigationContext ctx : openWindows.values()) {
-            Scene scene = ctx.windowStage().getScene();
-            if (scene != null) {
-                applyTheme(scene);
-            }
+
+        for (NavigationContext<?> navigationContext : openWindows.values()) {
+            applyTheme(navigationContext.windowStage().getScene());
+        }
+
+        for (WindowLayers layers : registeredWindowLayers.values()) {
+            applyThemeToNode(layers.mainContentLayer());
+            applyThemeToNode(layers.overlayLayer());
+            applyThemeToNode(layers.messageLayer());
         }
     }
 
-    private void applyTheme(Scene scene) {
-        if (scene == null) {
+    public void registerMainWindowLayers(String windowKey,
+                                         StackPane mainContentLayer,
+                                         StackPane overlayLayer,
+                                         StackPane messageLayer,
+                                         Node defaultMainContent) {
+        if (windowKey == null || windowKey.isBlank() || mainContentLayer == null || overlayLayer == null || messageLayer == null) {
             return;
         }
 
-        Parent root = scene.getRoot();
-        if (root == null) {
+        WindowLayers layers = new WindowLayers(mainContentLayer, overlayLayer, messageLayer, defaultMainContent);
+        registeredWindowLayers.put(windowKey, layers);
+
+        applyThemeToNode(mainContentLayer);
+        applyThemeToNode(overlayLayer);
+        applyThemeToNode(messageLayer);
+
+        Scene scene = mainContentLayer.getScene();
+        if (scene != null) {
+            scene.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
+                if (event.getCode() == javafx.scene.input.KeyCode.ESCAPE) {
+                    if (closeTopMostOverlay(windowKey)) {
+                        event.consume();
+                    }
+                }
+            });
+        }
+    }
+
+    public void showMainDashboard() {
+        WindowLayers layers = requireWindowLayers(MAIN_WINDOW_KEY);
+        Node defaultContent = layers.defaultMainContent();
+        if (defaultContent == null) {
             return;
         }
-
-        var styleClasses = root.getStyleClass();
-
-        styleClasses.remove("rootDark");
-
-        if (!isWhiteMode) {
-            if (!styleClasses.contains("rootDark")) {
-                styleClasses.add("rootDark");
-            }
-        }
+        layers.mainContentLayer().getChildren().setAll(defaultContent);
     }
 
-    private void addIconsToList(){
-        appIcons.add(loadIcon("/icons/app-icon-16.png"));
-        appIcons.add(loadIcon("/icons/app-icon-32.png"));
-        appIcons.add(loadIcon("/icons/app-icon-48.png"));
-        appIcons.add(loadIcon("/icons/app-icon-64.png"));
-        appIcons.add(loadIcon("/icons/app-icon-128.png"));
-        appIcons.add(loadIcon("/icons/app-icon-256.png"));
-        appIcons.add(loadIcon("/icons/app-icon-512.png"));
-        appIcons.add(loadIcon("/icons/app-icon-1024.png"));
+    public void loadMain() throws IOException {
+        loadStageView(MAIN_WINDOW_KEY, "mainview/main_view.fxml", "PayTalk", 1280, 860, false, null);
     }
 
-    public void registerOverlayHost(String windowKey, StackPane overlayHost) {
-        if (windowKey == null || windowKey.isBlank() || overlayHost == null) {
+    public void loadLogin() throws IOException {
+        loadStageView("login", "login.fxml", "PayTalk: Login", 400, 400, false, null);
+    }
+
+    public void closeLogin() {
+        NavigationContext<?> info = openWindows.get("login");
+        if (info == null) {
             return;
         }
-        overlayHosts.put(windowKey, overlayHost);
-    }
-
-    public void unregisterOverlayHost(String windowKey, StackPane overlayHost) {
-        if (windowKey == null || windowKey.isBlank() || overlayHost == null) {
-            return;
-        }
-        StackPane registered = overlayHosts.get(windowKey);
-        if (registered == overlayHost) {
-            overlayHosts.remove(windowKey);
+        Stage stage = info.windowStage();
+        if (stage != null && stage.isShowing()) {
+            stage.close();
+        } else {
+            openWindows.remove("login");
         }
     }
 
-    private Image loadIcon(String resourcePath) {
-        InputStream is = Objects.requireNonNull(
-                getClass().getResourceAsStream(resourcePath),
-                "Icon-Ressource nicht gefunden: " + resourcePath
-        );
-        return new Image(is);
+    public NavigationResponse<TransactionViewController> loadTransactionView() throws IOException {
+        return loadInMainContentLayer("transactionView", "transactionView.fxml", TransactionViewController.class);
     }
 
-    private <T> NavigationResponse<T> loadStageView(String key, String fxml, String title, double width, double height, boolean alwaysOnTop, Class<T> controllerType)throws IOException {
-        NavigationContext<T> existing = openWindows.get(key);
+    public NavigationResponse<WallCommentViewController> loadWallCommentView() throws IOException {
+        return loadInMainContentLayer("wallCommentView", "wallCommentView.fxml", WallCommentViewController.class);
+    }
+
+    public NavigationResponse<ChatWindowController> loadChatView(String chatPartner) throws IOException {
+        return loadStageView("chat:" + chatPartner, "chat_window.fxml", "PayTalk: Chat mit: " + chatPartner, 800, 600, false, ChatWindowController.class);
+    }
+
+    public NavigationResponse<TransactionDetailController> loadTransactionDetailView() throws IOException {
+        Window mainWindow = requireMainWindow();
+        return loadInOverlayLayer(mainWindow, "transactionDetail", "transaction_detail.fxml", TransactionDetailController.class);
+    }
+
+    public NavigationResponse<CsvImportDialogController> loadCsvDialogView(Window ownerWindow) throws IOException {
+        return loadInOverlayLayer(ownerWindow, "csvImport", "csvImportDialog.fxml", CsvImportDialogController.class);
+    }
+
+    public void closeCsvDialog(Window ownerWindow) {
+        resolveWindowKey(ownerWindow).ifPresent(ownerKey -> closeOverlay(ownerKey, "csvImport"));
+    }
+
+    private <T> NavigationResponse<T> loadStageView(String key,
+                                                    String fxml,
+                                                    String title,
+                                                    double width,
+                                                    double height,
+                                                    boolean alwaysOnTop,
+                                                    Class<T> controllerType) throws IOException {
+        NavigationContext<?> existing = openWindows.get(key);
         if (existing != null) {
             Stage stage = existing.windowStage();
             if (stage.isShowing()) {
@@ -125,9 +165,8 @@ public class ViewNavigator {
                     return new NavigationResponse<>(null, true);
                 }
                 return new NavigationResponse<>(controllerType.cast(existing.controller()), true);
-            } else {
-                openWindows.remove(key);
             }
+            openWindows.remove(key);
         }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/" + fxml));
@@ -146,17 +185,11 @@ public class ViewNavigator {
         stage.show();
         stage.toFront();
         stage.requestFocus();
-
         stage.getIcons().setAll(appIcons);
 
         Object controller = loader.getController();
-        NavigationContext<T> info = new NavigationContext(stage, controller);
-        openWindows.put(key, info);
-        stage.setOnHidden(e -> {
-            openWindows.remove(key);
-            overlayHosts.remove(key);
-            openEmbeddedViews.entrySet().removeIf(entry -> entry.getKey().startsWith(key + "|overlay|"));
-        });
+        openWindows.put(key, new NavigationContext<>(stage, controller));
+        stage.setOnHidden(e -> cleanupWindow(key));
 
         if (controllerType == null) {
             return new NavigationResponse<>(null, false);
@@ -168,39 +201,59 @@ public class ViewNavigator {
         return new NavigationResponse<>(controllerType.cast(controller), false);
     }
 
-    private <T> NavigationResponse<T> loadViewInWindowOverlay(Window ownerWindow, String viewKey, String fxml, Class<T> controllerType) throws IOException {
-        String ownerKey = resolveWindowKey(ownerWindow)
-                .orElseThrow(() -> new IllegalStateException("Das aufrufende Fenster ist im Navigator nicht registriert."));
-        StackPane overlayHost = overlayHosts.get(ownerKey);
-        if (overlayHost == null) {
-            throw new IllegalStateException("Für das Fenster \"" + ownerKey + "\" ist kein Overlay-Host registriert.");
-        }
+    private <T> NavigationResponse<T> loadInMainContentLayer(String viewKey, String fxml, Class<T> controllerType) throws IOException {
+        WindowLayers layers = requireWindowLayers(MAIN_WINDOW_KEY);
+        EmbeddedNavigationContext<?> existing = contentViews.get(viewKey);
 
-        String contextKey = ownerKey + "|overlay|" + viewKey;
-        EmbeddedNavigationContext<T> existing = openEmbeddedViews.get(contextKey);
         if (existing != null) {
-            Node node = existing.rootNode();
-            if (!overlayHost.getChildren().contains(node)) {
-                overlayHost.getChildren().add(node);
-            }
-            node.toFront();
-            return new NavigationResponse<>(existing.controller(), true);
+            layers.mainContentLayer().getChildren().setAll(existing.rootNode());
+            @SuppressWarnings("unchecked") T controller = (T) existing.controller();
+            return new NavigationResponse<>(controller, true);
         }
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/" + fxml));
         loader.setControllerFactory(context::getBean);
         Parent root = loader.load();
+        applyThemeToNode(root);
 
-        applyThemeIfAttached(ownerWindow, root);
-
-        Node overlayShell = buildOverlayShell(ownerKey, viewKey, root);
-        overlayHost.getChildren().add(overlayShell);
-        overlayShell.toFront();
-
-        if (controllerType == null) {
-            openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, null));
-            return new NavigationResponse<>(null, false);
+        Object controller = loader.getController();
+        if (!controllerType.isInstance(controller)) {
+            throw new IllegalStateException("Controller für " + fxml + " hat nicht den erwarteten Typ "
+                    + controllerType.getName() + ", sondern " + controller.getClass().getName());
         }
+
+        layers.mainContentLayer().getChildren().setAll(root);
+        T typedController = controllerType.cast(controller);
+        contentViews.put(viewKey, new EmbeddedNavigationContext<>(root, typedController));
+        return new NavigationResponse<>(typedController, false);
+    }
+
+    private <T> NavigationResponse<T> loadInOverlayLayer(Window ownerWindow,
+                                                         String viewKey,
+                                                         String fxml,
+                                                         Class<T> controllerType) throws IOException {
+        String windowKey = resolveWindowKey(ownerWindow)
+                .orElseThrow(() -> new IllegalStateException("Das aufrufende Fenster ist im Navigator nicht registriert."));
+
+        WindowLayers layers = requireWindowLayers(windowKey);
+        String contextKey = windowKey + "|overlay|" + viewKey;
+        EmbeddedNavigationContext<?> existing = overlayViews.get(contextKey);
+
+        if (existing != null) {
+            layers.overlayLayer().getChildren().setAll(existing.rootNode());
+            existing.rootNode().requestFocus();
+            @SuppressWarnings("unchecked") T controller = (T) existing.controller();
+            return new NavigationResponse<>(controller, true);
+        }
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/" + fxml));
+        loader.setControllerFactory(context::getBean);
+        Parent root = loader.load();
+        applyThemeToNode(root);
+
+        Node overlayShell = buildOverlayShell(windowKey, viewKey, root);
+        layers.overlayLayer().getChildren().setAll(overlayShell);
+        overlayShell.requestFocus();
 
         Object controller = loader.getController();
         if (!controllerType.isInstance(controller)) {
@@ -209,40 +262,90 @@ public class ViewNavigator {
         }
 
         T typedController = controllerType.cast(controller);
-        openEmbeddedViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, typedController));
+        overlayViews.put(contextKey, new EmbeddedNavigationContext<>(overlayShell, typedController));
         return new NavigationResponse<>(typedController, false);
     }
 
     private Node buildOverlayShell(String ownerKey, String viewKey, Parent content) {
         StackPane shell = new StackPane();
-        shell.setPickOnBounds(true);
-        shell.setStyle("-fx-background-color: rgba(0,0,0,0.35);");
+        shell.getStyleClass().add("app-overlay-shell");
+        shell.setFocusTraversable(true);
 
         StackPane card = new StackPane(content);
-        card.setMaxWidth(980);
-        card.setMaxHeight(640);
-        card.getStyleClass().add("card");
-        card.setStyle("-fx-background-color: -fx-background;");
+        card.getStyleClass().add("app-overlay-card");
+
+        Button closeButton = new Button("✕");
+        closeButton.getStyleClass().add("app-overlay-close-button");
+        closeButton.setOnAction(event -> closeOverlay(ownerKey, viewKey));
+        closeButton.setFocusTraversable(false);
+
         StackPane.setAlignment(card, Pos.CENTER);
         StackPane.setMargin(card, new Insets(24));
-
-        Button closeButton = new Button("Schließen");
-        closeButton.setOnAction(event -> closeEmbeddedView(ownerKey, viewKey));
-        closeButton.setFocusTraversable(false);
-        closeButton.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-background-color: #e74c3c; -fx-text-fill: white;");
         StackPane.setAlignment(closeButton, Pos.TOP_RIGHT);
-        StackPane.setMargin(closeButton, new Insets(32, 32, 0, 0));
-        closeButton.toFront();
+        StackPane.setMargin(closeButton, new Insets(24));
 
         shell.getChildren().addAll(card, closeButton);
         shell.setOnKeyPressed(event -> {
             switch (event.getCode()) {
-                case ESCAPE -> closeEmbeddedView(ownerKey, viewKey);
+                case ESCAPE -> {
+                    closeOverlay(ownerKey, viewKey);
+                    event.consume();
+                }
                 default -> {
                 }
             }
         });
+
         return shell;
+    }
+
+    private boolean closeTopMostOverlay(String windowKey) {
+        WindowLayers layers = registeredWindowLayers.get(windowKey);
+        if (layers == null || layers.overlayLayer().getChildren().isEmpty()) {
+            return false;
+        }
+
+        Optional<String> anyOverlayKey = overlayViews.keySet().stream()
+                .filter(key -> key.startsWith(windowKey + "|overlay|"))
+                .findFirst();
+
+        if (anyOverlayKey.isEmpty()) {
+            return false;
+        }
+
+        String contextKey = anyOverlayKey.get();
+        String viewKey = contextKey.substring((windowKey + "|overlay|").length());
+        closeOverlay(windowKey, viewKey);
+        return true;
+    }
+
+    private void closeOverlay(String ownerKey, String viewKey) {
+        String contextKey = ownerKey + "|overlay|" + viewKey;
+        EmbeddedNavigationContext<?> context = overlayViews.remove(contextKey);
+        if (context == null) {
+            return;
+        }
+
+        WindowLayers layers = registeredWindowLayers.get(ownerKey);
+        if (layers != null) {
+            layers.overlayLayer().getChildren().remove(context.rootNode());
+        }
+    }
+
+    private WindowLayers requireWindowLayers(String windowKey) {
+        WindowLayers layers = registeredWindowLayers.get(windowKey);
+        if (layers == null) {
+            throw new IllegalStateException("Für das Fenster \"" + windowKey + "\" sind keine Layer registriert.");
+        }
+        return layers;
+    }
+
+    private Window requireMainWindow() {
+        NavigationContext<?> mainContext = openWindows.get(MAIN_WINDOW_KEY);
+        if (mainContext == null) {
+            throw new IllegalStateException("Das Hauptfenster ist aktuell nicht geöffnet.");
+        }
+        return mainContext.windowStage();
     }
 
     private Optional<String> resolveWindowKey(Window window) {
@@ -250,7 +353,7 @@ public class ViewNavigator {
             return Optional.empty();
         }
 
-        for (Map.Entry<String, NavigationContext> entry : openWindows.entrySet()) {
+        for (Map.Entry<String, NavigationContext<?>> entry : openWindows.entrySet()) {
             if (entry.getValue().windowStage() == stage) {
                 return Optional.of(entry.getKey());
             }
@@ -258,81 +361,52 @@ public class ViewNavigator {
         return Optional.empty();
     }
 
-    private void applyThemeIfAttached(Window ownerWindow, Parent root) {
-        if (root == null) {
+    private void cleanupWindow(String windowKey) {
+        openWindows.remove(windowKey);
+        registeredWindowLayers.remove(windowKey);
+        overlayViews.entrySet().removeIf(entry -> entry.getKey().startsWith(windowKey + "|overlay|"));
+    }
+
+    private void applyTheme(Scene scene) {
+        if (scene == null || scene.getRoot() == null) {
             return;
         }
-        Scene ownerScene = ownerWindow != null ? ownerWindow.getScene() : null;
-        if (ownerScene == null) {
+        applyThemeToNode(scene.getRoot());
+    }
+
+    private void applyThemeToNode(Node node) {
+        if (!(node instanceof Parent parent)) {
             return;
         }
 
-        root.getStyleClass().remove("rootDark");
-        if (!isWhiteMode) {
-            root.getStyleClass().add("rootDark");
+        parent.getStyleClass().remove("rootDark");
+        if (!isWhiteMode && !parent.getStyleClass().contains("rootDark")) {
+            parent.getStyleClass().add("rootDark");
         }
     }
 
-    public void loadMain() throws IOException {
-        loadStageView("main", "mainview/main_view.fxml", "PayTalk", 1280, 860, false, null);
+    private void addIconsToList() {
+        appIcons.add(loadIcon("/icons/app-icon-16.png"));
+        appIcons.add(loadIcon("/icons/app-icon-32.png"));
+        appIcons.add(loadIcon("/icons/app-icon-48.png"));
+        appIcons.add(loadIcon("/icons/app-icon-64.png"));
+        appIcons.add(loadIcon("/icons/app-icon-128.png"));
+        appIcons.add(loadIcon("/icons/app-icon-256.png"));
+        appIcons.add(loadIcon("/icons/app-icon-512.png"));
+        appIcons.add(loadIcon("/icons/app-icon-1024.png"));
     }
 
-    public void loadLogin() throws IOException {
-        loadStageView("login", "login.fxml", "PayTalk: Login", 400, 400, false, null);
+    private Image loadIcon(String resourcePath) {
+        InputStream is = Objects.requireNonNull(
+                getClass().getResourceAsStream(resourcePath),
+                "Icon-Ressource nicht gefunden: " + resourcePath
+        );
+        return new Image(is);
     }
 
-    public void closeLogin() {
-        NavigationContext info = openWindows.get("login");
-        if (info == null) { return; }
-        Stage stage = info.windowStage();
-        if (stage != null && stage.isShowing()) { stage.close(); } else { openWindows.remove("login"); }
+    private record EmbeddedNavigationContext<T>(Node rootNode, T controller) {
     }
 
-    public NavigationResponse<TransactionViewController> loadTransactionView() throws IOException {
-        return loadStageView("transactionView", "transactionView.fxml", "PayTalk: Transaktionsübersicht", 1280, 860, false, TransactionViewController.class);
+    private record WindowLayers(StackPane mainContentLayer, StackPane overlayLayer, StackPane messageLayer, Node defaultMainContent) {
     }
-
-    public NavigationResponse<WallCommentViewController> loadWallCommentView() throws IOException {
-        return loadStageView("wallCommentView", "wallCommentView.fxml", "PayTalk: Pinnwand", 1280, 860, false, WallCommentViewController.class);
-    }
-
-    public NavigationResponse<ChatWindowController> loadChatView(String chatPartner) throws IOException {
-        return loadStageView("chat:" + chatPartner, "chat_window.fxml", "PayTalk: Chat mit: " + chatPartner, 800, 600, false, ChatWindowController.class);
-    }
-
-    public NavigationResponse<TransactionDetailController> loadTransactionDetailView() throws IOException {
-        return loadStageView("transactionDetail", "transaction_detail.fxml", "PayTalk: Transaktionsinfos", 600, 300, false, TransactionDetailController.class);
-    }
-
-    public NavigationResponse<CsvImportDialogController> loadCsvDialogView(Window ownerWindow) throws IOException {
-        return loadView("csvImport", "csvImportDialog.fxml", CsvImportDialogController.class, ViewOpenMode.OVERLAY_IN_WINDOW, ownerWindow);
-    }
-
-    public void closeCsvDialog(Window ownerWindow) {
-        resolveWindowKey(ownerWindow).ifPresent(ownerKey -> closeEmbeddedView(ownerKey, "csvImport"));
-    }
-
-    private <T> NavigationResponse<T> loadView(String key, String fxml, Class<T> controllerType, ViewOpenMode openMode, Window ownerWindow) throws IOException {
-        if (openMode == ViewOpenMode.NEW_STAGE) {
-            throw new IllegalStateException("Für NEW_STAGE muss loadStageView verwendet werden.");
-        }
-        if (openMode == ViewOpenMode.OVERLAY_IN_WINDOW) {
-            return loadViewInWindowOverlay(ownerWindow, key, fxml, controllerType);
-        }
-        throw new UnsupportedOperationException("Open mode " + openMode + " ist aktuell nicht implementiert.");
-    }
-
-    private void closeEmbeddedView(String ownerKey, String viewKey) {
-        String contextKey = ownerKey + "|overlay|" + viewKey;
-        EmbeddedNavigationContext context = openEmbeddedViews.remove(contextKey);
-        if (context != null && context.rootNode() != null) {
-            context.rootNode().setVisible(false);
-            context.rootNode().setManaged(false);
-            if (context.rootNode().getParent() instanceof StackPane parentPane) {
-                parentPane.getChildren().remove(context.rootNode());
-            }
-        }
-    }
-
-    private record EmbeddedNavigationContext<T>(Node rootNode, T controller) {}
 }

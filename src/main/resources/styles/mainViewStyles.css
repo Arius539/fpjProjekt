@@ -3,3 +3,31 @@ Ki generiert
 */
 
 @import "common.css";
+
+.app-overlay-shell {
+    -fx-background-color: rgba(0, 0, 0, 0.35);
+}
+
+.app-overlay-card {
+    -fx-max-width: 980;
+    -fx-max-height: 680;
+    -fx-background-color: -c-surface;
+    -fx-background-radius: 12;
+    -fx-border-color: -c-border;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, -c-shadow, 16, 0.3, 0, 3);
+}
+
+.app-overlay-close-button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-color: -c-brand;
+    -fx-text-fill: -c-on-brand;
+    -fx-background-radius: 100;
+    -fx-min-width: 36;
+    -fx-min-height: 36;
+    -fx-max-width: 36;
+    -fx-max-height: 36;
+    -fx-padding: 0;
+}

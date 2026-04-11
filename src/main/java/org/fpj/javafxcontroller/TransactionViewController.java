@@ -8,7 +8,6 @@ import javafx.scene.control.SelectionMode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
 import org.controlsfx.control.textfield.AutoCompletionBinding;
@@ -100,9 +99,6 @@ public class TransactionViewController {
     private Button importCsvButton;
 
     @FXML
-    private StackPane overlayHost;
-
-    @FXML
     private ListView<TransactionLite> batchTransactionTable;
 
     private User currentUser;
@@ -142,7 +138,6 @@ public class TransactionViewController {
         initPager();
         updateBalances();
         setUpAutoCompletion();
-        registerOverlayHost();
     }
 
     private void processSearchParameter() {
@@ -534,17 +529,6 @@ public class TransactionViewController {
         } catch (Exception e) {
             alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
-    }
-
-    private void registerOverlayHost() {
-        if (overlayHost == null || importCsvButton == null || importCsvButton.getScene() == null) {
-            return;
-        }
-        Window ownerWindow = importCsvButton.getScene().getWindow();
-        if (ownerWindow == null) {
-            return;
-        }
-        viewNavigator.registerOverlayHost("transactionView", overlayHost);
     }
 
     private void addTransactionToBatch(List<MassTransfer> massTransfers) {

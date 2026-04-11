@@ -4,67 +4,70 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane xmlns="http://javafx.com/javafx/23"
+<StackPane xmlns="http://javafx.com/javafx/23"
           xmlns:fx="http://javafx.com/fxml/1"
           fx:controller="org.fpj.javafxcontroller.mainView.MainViewController"
-          hgap="12" vgap="12"
           styleClass="rootDark"
           stylesheets="@/styles/mainViewStyles.css">
 
-    <padding>
-        <Insets topRightBottomLeft="12"/>
-    </padding>
+    <StackPane fx:id="mainContentLayer" pickOnBounds="true">
+        <GridPane hgap="12" vgap="12">
+            <padding>
+                <Insets topRightBottomLeft="12"/>
+            </padding>
 
-    <columnConstraints>
-        <ColumnConstraints percentWidth="25"/>
-        <ColumnConstraints percentWidth="50"/>
-        <ColumnConstraints percentWidth="25"/>
-    </columnConstraints>
+            <columnConstraints>
+                <ColumnConstraints percentWidth="25"/>
+                <ColumnConstraints percentWidth="75"/>
+            </columnConstraints>
 
-    <rowConstraints>
-        <RowConstraints vgrow="ALWAYS"/>
-    </rowConstraints>
+            <rowConstraints>
+                <RowConstraints vgrow="ALWAYS"/>
+            </rowConstraints>
 
-    <VBox GridPane.columnIndex="0" spacing="12">
+            <VBox GridPane.columnIndex="0" spacing="12">
 
-        <StackPane styleClass="card">
-            <VBox spacing="6">
-                <Label text="Profil" styleClass="card-title"/>
-                <Label fx:id="lblEmail"/>
+                <StackPane styleClass="card">
+                    <VBox spacing="6">
+                        <Label text="Profil" styleClass="card-title"/>
+                        <Label fx:id="lblEmail"/>
+                    </VBox>
+                </StackPane>
+
+                <StackPane styleClass="card">
+                    <VBox spacing="6">
+                        <Label text="Kontostand" styleClass="card-title"/>
+                        <Label fx:id="lblBalance" styleClass="balance"/>
+                    </VBox>
+                </StackPane>
+
+                <StackPane styleClass="card">
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Label text="Theme" styleClass="card-title"/>
+                        <ToggleButton fx:id="themeButton"
+                                      onAction="#onToggleTheme"
+                                      styleClass="theme-toggle-button"/>
+                    </HBox>
+                </StackPane>
+
+                <StackPane styleClass="card" VBox.vgrow="ALWAYS">
+                    <VBox spacing="8">
+                        <Label text="Aktionen" styleClass="card-title"/>
+                        <Button text="Meine Transaktionen" onAction="#actionTransactions"/>
+                        <Button text="Meine Pinnwand" onAction="#actionWallComments"/>
+                        <Button text="Dashboard" onAction="#actionDashboard"/>
+                        <Region VBox.vgrow="ALWAYS"/>
+                    </VBox>
+                </StackPane>
             </VBox>
-        </StackPane>
 
-        <StackPane styleClass="card">
-            <VBox spacing="6">
-                <Label text="Kontostand" styleClass="card-title"/>
-                <Label fx:id="lblBalance" styleClass="balance"/>
-            </VBox>
-        </StackPane>
-
-        <StackPane styleClass="card">
-            <HBox spacing="8" alignment="CENTER_LEFT">
-                <Label text="Theme" styleClass="card-title"/>
-                <ToggleButton fx:id="themeButton"
-                              onAction="#onToggleTheme"
-                              styleClass="theme-toggle-button"/>
+            <HBox fx:id="dashboardContent" GridPane.columnIndex="1" spacing="12">
+                <fx:include source="/fxml/mainview/transactionViewLite.fxml" fx:id="transactionsPanel" HBox.hgrow="ALWAYS"/>
+                <fx:include source="/fxml/mainview/chatPreviewView.fxml" fx:id="chatsPanel" HBox.hgrow="ALWAYS"/>
             </HBox>
-        </StackPane>
+        </GridPane>
+    </StackPane>
 
-        <StackPane styleClass="card" VBox.vgrow="ALWAYS">
-            <VBox spacing="8">
-                <Label text="Aktionen" styleClass="card-title"/>
-                <Button text="Meine Transaktionen" onAction="#actionTransactions"/>
-                <Button text="Meine Pinnwand"        onAction="#actionWallComments"/>
-                <Region VBox.vgrow="ALWAYS"/>
-            </VBox>
-        </StackPane>
-    </VBox>
-
-    <fx:include source="/fxml/mainview/transactionViewLite.fxml"
-                GridPane.columnIndex="1"
-                fx:id="transactionsPanel"/>
-
-    <fx:include source="/fxml/mainview/chatPreviewView.fxml"
-                GridPane.columnIndex="2"
-                fx:id="chatsPanel"/>
-</GridPane>
+    <StackPane fx:id="overlayLayer" pickOnBounds="false" mouseTransparent="false"/>
+    <StackPane fx:id="messageLayer" pickOnBounds="false" mouseTransparent="true"/>
+</StackPane>
