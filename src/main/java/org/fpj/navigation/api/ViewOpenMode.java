@@ -1,4 +1,4 @@
-package org.fpj.navigation;
+package org.fpj.navigation.api;
 
 public enum ViewOpenMode {
     NEW_STAGE,

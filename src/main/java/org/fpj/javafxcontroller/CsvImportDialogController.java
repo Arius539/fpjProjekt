@@ -3,7 +3,6 @@ package org.fpj.javafxcontroller;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -15,12 +14,15 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Window;
-import org.fpj.navigation.ViewNavigator;
 import org.fpj.util.AlertService;
 import org.fpj.exportimport.domain.CsvError;
 import org.fpj.exportimport.domain.CsvImportResult;
 import org.fpj.exportimport.domain.CsvReader;
 import org.fpj.exportimport.application.FileHandling;
+import org.fpj.navigation.api.NavigationActions;
+import org.fpj.navigation.api.NavigationAware;
+import org.fpj.navigation.api.NavigationHandle;
+import org.fpj.navigation.api.ViewNavigator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javafx.util.Duration;
@@ -30,7 +32,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 @Component
-public class CsvImportDialogController<E> {
+@org.springframework.context.annotation.Scope(org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE)
+public class CsvImportDialogController<E> implements NavigationAware {
 
     private final ObservableList<CsvError> errorList = FXCollections.observableArrayList();
     private final AlertService alertService;
@@ -45,10 +48,11 @@ public class CsvImportDialogController<E> {
     private ListView<CsvError> errorListView;
 
     private String selectedFilePath;
-    private CsvReader csvReader;
+    private CsvReader<E> csvReader;
     private Consumer<List<E>> csvImportConsumer;
 
     private final ViewNavigator  viewNavigator;
+    private NavigationHandle navigationHandle;
 
     @Autowired
     public CsvImportDialogController(AlertService alertService, ViewNavigator viewNavigator) {
@@ -62,7 +66,7 @@ public class CsvImportDialogController<E> {
     private void initialize() {
     }
 
-    public void initialize(CsvReader csvReader, Consumer<List<E>> csvImportConsumer) {
+    public void initialize(CsvReader<E> csvReader, Consumer<List<E>> csvImportConsumer) {
         if (csvReader == null) {
             throw new IllegalStateException("csvReader is null");
         }
@@ -116,18 +120,20 @@ public class CsvImportDialogController<E> {
             }
         };
 
-        importTask.setOnSucceeded(event1 -> {
+        importTask.setOnSucceeded(ignoredEvent -> {
             CsvImportResult<E> result = importTask.getValue();
             if (result.getErrors().isEmpty()) {
                 csvImportConsumer.accept(result.getRecords());
-                Window window = chooseFileButton.getScene().getWindow();
-                this.viewNavigator.closeCsvDialog(window);
+                NavigationActions.closeOrElse(
+                        navigationHandle,
+                        () -> this.viewNavigator.closeCurrentPresentation(chooseFileButton.getScene().getWindow())
+                );
             } else {
                 errorList.addAll(result.getErrors());
             }
         });
 
-        importTask.setOnFailed(event1 -> {
+        importTask.setOnFailed(ignoredEvent -> {
             Throwable ex = importTask.getException();
             alertService.error("Unerwarteter Fehler", "Unerwarteter Fehler: " + ex.getMessage());
         });
@@ -136,7 +142,7 @@ public class CsvImportDialogController<E> {
     }
 
     private void initErrorList() {
-        errorListView.setCellFactory(list -> new ListCell<>() {
+        errorListView.setCellFactory(ignoredListView -> new ListCell<>() {
             @Override
             protected void updateItem(CsvError item, boolean empty) {
                 super.updateItem(item, empty);
@@ -225,5 +231,18 @@ public class CsvImportDialogController<E> {
             sb.append("\nWert: ").append(raw);
         }
         return sb.toString();
+    }
+
+    @FXML
+    private void onBackToPreviousView() {
+        NavigationActions.backOrElse(
+                navigationHandle,
+                () -> this.viewNavigator.closeCurrentPresentation(chooseFileButton.getScene().getWindow())
+        );
+    }
+
+    @Override
+    public void setNavigationHandle(NavigationHandle navigationHandle) {
+        this.navigationHandle = navigationHandle;
     }
 }

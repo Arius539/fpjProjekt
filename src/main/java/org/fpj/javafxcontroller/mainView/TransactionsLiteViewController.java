@@ -17,25 +17,23 @@ import org.fpj.exceptions.UserInputNormalizationException;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
-import org.fpj.navigation.NavigationResponse;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exceptions.TransactionException;
-import org.fpj.navigation.ViewNavigator;
-import org.fpj.javafxcontroller.TransactionDetailController;
-import org.fpj.javafxcontroller.TransactionViewController;
+import org.fpj.navigation.api.ViewNavigator;
+import org.fpj.navigation.api.ViewOpenMode;
+import org.fpj.navigation.fx.NavigationMenuBinder;
+import org.fpj.navigation.support.TransactionNavigationSupport;
 import org.fpj.payments.application.TransactionService;
 import org.fpj.payments.domain.TransactionLite;
 import org.fpj.payments.domain.TransactionResult;
 import org.fpj.payments.domain.TransactionRow;
 import org.fpj.payments.domain.TransactionType;
-import org.fpj.payments.domain.TransactionViewSearchParameter;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
@@ -51,6 +49,7 @@ public class TransactionsLiteViewController {
     private final UserService userService;
     private final TransactionService transactionService;
     private final AlertService alertService;
+    private final TransactionNavigationSupport transactionNavigationSupport;
     private final ViewNavigator viewNavigator;
 
     @FXML
@@ -81,11 +80,16 @@ public class TransactionsLiteViewController {
     private Consumer<String> balanceRefreshCallback;
 
     @Autowired
-    public TransactionsLiteViewController(UserService userService, TransactionService transactionService, AlertService alertService, ViewNavigator navigator) {
-        this.viewNavigator = navigator;
+    public TransactionsLiteViewController(UserService userService,
+                                          TransactionService transactionService,
+                                          AlertService alertService,
+                                          TransactionNavigationSupport transactionNavigationSupport,
+                                          ViewNavigator viewNavigator) {
         this.userService = userService;
         this.transactionService = transactionService;
         this.alertService = alertService;
+        this.transactionNavigationSupport = transactionNavigationSupport;
+        this.viewNavigator = viewNavigator;
     }
 
     // <editor-fold defaultstate="collapsed" desc="initialize">
@@ -132,7 +136,7 @@ public class TransactionsLiteViewController {
                 String subtitle = UiHelpers.formatInstant(item.createdAt()) + "  •  " + UiHelpers.truncateFull(item.description(), 20);
                 String amountText = item.amountString(currentUser.getId());
 
-                HBox root = createTransactionRowBox(counterparty, subtitle, amountText, () -> openTransactionDetails(item));
+                HBox root = createTransactionRowBox(counterparty, subtitle, amountText, item);
                 setGraphic(root);
 
                 int index = getIndex();
@@ -166,7 +170,7 @@ public class TransactionsLiteViewController {
     }
     // </editor-fold>
 
-    private HBox createTransactionRowBox(String titleText, String subtitleText, String amountText, Runnable onDoubleClick) {
+    private HBox createTransactionRowBox(String titleText, String subtitleText, String amountText, TransactionRow row) {
         Label title = new Label(titleText);
         Label subtitle = new Label(subtitleText);
         VBox left = new VBox(2, title, subtitle);
@@ -176,12 +180,12 @@ public class TransactionsLiteViewController {
 
         HBox root = new HBox(8, left, spacer, amount);
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        root.setOnMouseClicked(ev -> {
-            if (ev.getClickCount() == 2 && onDoubleClick != null) {
-                onDoubleClick.run();
-            }
-        });
+        NavigationMenuBinder.attach(
+                root,
+                2,
+                viewNavigator.defaultModeForTransactionDetail(),
+                openMode -> openTransactionDetails(row, openMode)
+        );
 
         return root;
     }
@@ -265,24 +269,15 @@ public class TransactionsLiteViewController {
         updateBalance();
     }
 
-    private void openTransactionDetails(TransactionRow row) {
-        if (row == null) {
-            return;
-        }
-        try {
-            NavigationResponse<TransactionDetailController> response= viewNavigator.loadTransactionDetailView();
-            response.controller().initialize(
-                    TransactionLite.fromTransactionRow(row),
-                    this.currentUser,
-                    this::onTransactionDetailSenderClicked,
-                    this::onTransactionDetailRecipientClicked,
-                    this::useTransactionAsTemplate,
-                    this::onTransactionDetailDescriptionClicked,
-                    this::onTransactionDetailAmountClicked
-            );
-        } catch (Exception e) {
-            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu.");
-        }
+    private void openTransactionDetails(TransactionRow row, ViewOpenMode openMode) {
+        transactionNavigationSupport.openTransactionDetails(
+                lvTransactions.getScene().getWindow(),
+                currentUser,
+                TransactionLite.fromTransactionRow(row),
+                this::useTransactionAsTemplate,
+                openMode,
+                null
+        );
     }
 
     private void useTransactionAsTemplate(TransactionLite row) {
@@ -303,39 +298,6 @@ public class TransactionsLiteViewController {
         }
 
         onTypeChanged();
-    }
-
-    private void onTransactionDetailDescriptionClicked(TransactionLite row) {
-        TransactionViewSearchParameter sp = new TransactionViewSearchParameter(null, row.description(), null, null, null, null, null);
-        this.openTransactionViewWindow(sp);
-    }
-
-    private void onTransactionDetailSenderClicked(TransactionLite row) {
-        TransactionViewSearchParameter sp = new TransactionViewSearchParameter(null, null, null, null, row.senderUsername(), null, null);
-        this.openTransactionViewWindow(sp);
-    }
-
-    private void onTransactionDetailRecipientClicked(TransactionLite row) {
-        TransactionViewSearchParameter sp = new TransactionViewSearchParameter(null, null, null, null, row.recipientUsername(), null, null);
-        this.openTransactionViewWindow(sp);
-    }
-
-    private void onTransactionDetailAmountClicked(TransactionLite row) {
-        BigDecimal amount = row.amount();
-        BigDecimal min = amount.setScale(0, RoundingMode.FLOOR);
-        BigDecimal max = amount.setScale(0, RoundingMode.CEILING);
-
-        TransactionViewSearchParameter sp = new TransactionViewSearchParameter(null, null, null, null, null, min, max);
-        this.openTransactionViewWindow(sp);
-    }
-
-    private void openTransactionViewWindow(TransactionViewSearchParameter transactionViewSearchParameter) {
-        try {
-            NavigationResponse<TransactionViewController> response= viewNavigator.loadTransactionView();
-            response.controller().initialize(currentUser, transactionViewSearchParameter);
-        } catch (Exception e) {
-            alertService.error( "Fenster konnte nicht geöffnet werden", "Fehler beim Laden des Transaktionsfensters. Versuche es erneut oder starte die Anwendung neu.");
-        }
     }
 
     private void addLiteTransaction(TransactionRow transactionItem) {

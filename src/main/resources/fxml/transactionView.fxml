@@ -118,11 +118,9 @@
                                 </items>
                             </ComboBox>
 
-                            <Button fx:id="clearFilterButton"
-                                    text="Filter löschen"
+                            <Button text="Filter löschen"
                                     onAction="#onClearFilter"/>
-                            <Button fx:id="searchButton"
-                                    text="Suchen"
+                            <Button text="Suchen"
                                     onAction="#onSearch"/>
                         </HBox>
                     </VBox>
@@ -145,8 +143,7 @@
                             </tooltip>
                         </Button>
 
-                        <Button fx:id="btnExport"
-                                text="📂"
+                        <Button text="📂"
                                 onAction="#exportTransactions">
                             <tooltip>
                                 <Tooltip text="Transaktionen exportieren als csv"/>
@@ -214,17 +211,14 @@
                                   styleClass="button-row"
                                   alignment="CENTER">
                                 <Button fx:id="importCsvButton"
-                                        text="von CSV"
-                                        onAction="#onImportCsv">
+                                        text="von CSV">
                                     <tooltip>
                                         <Tooltip text="Transaktionen aus einer CSV-Datei importieren"/>
                                     </tooltip>
                                 </Button>
-                                <Button fx:id="executeSingleButton"
-                                        text="ausführen"
+                                <Button text="ausführen"
                                         onAction="#onExecuteSingle"/>
-                                <Button fx:id="addToBatchButton"
-                                        text="hinzufügen"
+                                <Button text="hinzufügen"
                                         onAction="#onAddToBatch"/>
                             </HBox>
                         </GridPane>
@@ -254,8 +248,7 @@
                             </ListView>
                             <HBox spacing="8" alignment="CENTER" >
                                 <Label fx:id="balanceLabelBatch" text="Saldo nach Transaktionen" styleClass="label-button-like "/>
-                                <Button fx:id="executeAllButton"
-                                        text="alle ausführen"
+                                <Button text="alle ausführen"
                                         onAction="#onExecuteAll"/>
                             </HBox>
                         </VBox>
@@ -266,5 +259,4 @@
             </GridPane>
         </center>
     </BorderPane>
-    <StackPane fx:id="overlayHost" pickOnBounds="false" mouseTransparent="false"/>
 </StackPane>

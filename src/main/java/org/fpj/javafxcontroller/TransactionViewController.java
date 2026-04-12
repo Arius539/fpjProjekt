@@ -16,13 +16,18 @@ import org.fpj.exceptions.UserInputNormalizationException;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
-import org.fpj.navigation.NavigationResponse;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exceptions.TransactionException;
-import org.fpj.navigation.ViewNavigator;
 import org.fpj.exportimport.application.MassTransferCsvReader;
 import org.fpj.exportimport.application.TransactionCsvExporter;
 import org.fpj.exportimport.application.FileHandling;
+import org.fpj.navigation.api.NavigationActions;
+import org.fpj.navigation.api.NavigationAware;
+import org.fpj.navigation.api.NavigationHandle;
+import org.fpj.navigation.api.ViewNavigator;
+import org.fpj.navigation.api.ViewOpenMode;
+import org.fpj.navigation.fx.NavigationMenuBinder;
+import org.fpj.navigation.support.TransactionNavigationSupport;
 import org.fpj.payments.application.TransactionService;
 import org.fpj.payments.domain.MassTransfer;
 import org.fpj.payments.domain.TransactionLite;
@@ -33,19 +38,21 @@ import org.fpj.payments.domain.TransactionViewSearchParameter;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 import static org.fpj.util.UiHelpers.parseAmountTolerant;
 
 @Component
-public class TransactionViewController {
+@Scope(SCOPE_PROTOTYPE)
+public class TransactionViewController implements NavigationAware {
 
     private static final int PAGE_SIZE_LIST = 40;
     private static final int PAGE_PRE_FETCH_THRESHOLD = 20;
@@ -55,6 +62,7 @@ public class TransactionViewController {
     private final TransactionCsvExporter transactionCsvExporter = new TransactionCsvExporter();
     private final AlertService alertService;
     private final ViewNavigator viewNavigator;
+    private final TransactionNavigationSupport transactionNavigationSupport;
 
     @FXML
     public Label balanceLabelBatch;
@@ -112,13 +120,19 @@ public class TransactionViewController {
 
     private AutoCompletionBinding<String> autoCompletionBinding;
     private String beforeActionComboBoxValue;
+    private NavigationHandle navigationHandle;
 
     @Autowired
-    public TransactionViewController(UserService userService, TransactionService transactionService, AlertService alertService, ViewNavigator  viewNavigator) {
+    public TransactionViewController(UserService userService,
+                                     TransactionService transactionService,
+                                     AlertService alertService,
+                                     ViewNavigator  viewNavigator,
+                                     TransactionNavigationSupport transactionNavigationSupport) {
         this.viewNavigator = viewNavigator;
         this.userService = userService;
         this.transactionService = transactionService;
         this.alertService = alertService;
+        this.transactionNavigationSupport = transactionNavigationSupport;
     }
 
     // <editor-fold defaultstate="collapsed" desc="initialize">
@@ -154,6 +168,11 @@ public class TransactionViewController {
         if (transactionTypeToggleGroup != null && transferRadio != null) {
             transactionTypeToggleGroup.selectToggle(transferRadio);
         }
+        NavigationMenuBinder.attach(
+                importCsvButton,
+                () -> viewNavigator.resolveChildDefaultOpenMode(viewNavigator.defaultModeForCsvImport(), navigationHandle),
+                this::openCsvImportDialog
+        );
     }
 
     private void initPager() {
@@ -175,7 +194,7 @@ public class TransactionViewController {
     private void initTransactionList() {
         transactionTable.setItems(transactionList);
 
-        transactionTable.setCellFactory(list -> new ListCell<>() {
+        transactionTable.setCellFactory(ignoredListView -> new ListCell<>() {
             @Override
             protected void updateItem(TransactionRow item, boolean empty) {
                 super.updateItem(item, empty);
@@ -202,13 +221,17 @@ public class TransactionViewController {
 
                 HBox root = createTransactionRowBox(counterparty, subtitle, amountText);
                 setGraphic(root);
+                NavigationMenuBinder.attachContextMenu(
+                        root,
+                        openMode -> openTransactionDetails(TransactionLite.fromTransactionRow(item), openMode)
+                );
 
                 int index = getIndex();
                 if (transactionPager != null) {
                     transactionPager.ensureLoadedForIndex(index, transactionList.size(), PAGE_PRE_FETCH_THRESHOLD);
                 }
 
-                setOnMouseClicked(ev -> {
+                root.setOnMouseClicked(ev -> {
                     if (ev.getClickCount() == 1) {
                         BigDecimal after = transactionService.findUserBalanceAfterTransaction(currentUser.getId(), item.id());
                         updateSelectedBalanceLabel(after);
@@ -225,7 +248,7 @@ public class TransactionViewController {
         batchTransactionTable.setItems(batchTransactionList);
         batchTransactionTable.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-        batchTransactionTable.setCellFactory(list -> new ListCell<>() {
+        batchTransactionTable.setCellFactory(ignoredListView -> new ListCell<>() {
             @Override
             protected void updateItem(TransactionLite item, boolean empty) {
                 super.updateItem(item, empty);
@@ -252,10 +275,14 @@ public class TransactionViewController {
 
                 HBox root = createTransactionRowBox(counterparty, subtitle, amountText);
                 setGraphic(root);
+                NavigationMenuBinder.attachContextMenu(
+                        root,
+                        openMode -> openTransactionDetails(item, openMode)
+                );
 
-                setOnMouseClicked(ev -> {
+                root.setOnMouseClicked(ev -> {
                     if (ev.getClickCount() == 2) {
-                        openTransactionDetails(item);
+                        openTransactionDetails(item, viewNavigator.defaultModeForTransactionDetail());
                     }
                 });
             }
@@ -400,12 +427,8 @@ public class TransactionViewController {
                     String value = (text == null || text.isBlank()) ? null : text;
                     searchParameter.setSenderRecipientUsername(value);
                 }
-                case "Created at von" -> {
-                    searchParameter.setCreatedFrom(UiHelpers.parseDateTolerant(text));
-                }
-                case "Created at bis" -> {
-                    searchParameter.setCreatedTo(UiHelpers.parseDateTolerant(text));
-                }
+                case "Created at von" -> searchParameter.setCreatedFrom(UiHelpers.parseDateTolerant(text));
+                case "Created at bis" -> searchParameter.setCreatedTo(UiHelpers.parseDateTolerant(text));
                 case "Betrag ab" -> {
                     var value = (text == null || text.isBlank())
                             ? null
@@ -502,30 +525,34 @@ public class TransactionViewController {
     }
 
     private void openTransactionDetails(TransactionLite row) {
-        if (row == null) {
-            return;
-        }
-        try {
-            NavigationResponse<TransactionDetailController> response = viewNavigator.loadTransactionDetailView();
-            response.controller().initialize(row, currentUser, this::onTransactionDetailSenderClicked, this::onTransactionDetailRecipientClicked, this::useTransactionAsTemplate, this::onTransactionDetailDescriptionClicked, this::onTransactionDetailAmountClicked);
-        } catch (Exception e) {
-            alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden der Transaktionsdetails. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
-        }
+        openTransactionDetails(row, viewNavigator.defaultModeForTransactionDetail());
     }
 
-    private void openCsvImportDialog() {
+    private void openTransactionDetails(TransactionLite row, ViewOpenMode openMode) {
+        transactionNavigationSupport.openTransactionDetails(
+                transactionTable.getScene().getWindow(),
+                currentUser,
+                row,
+                this::useTransactionAsTemplate,
+                openMode,
+                navigationHandle
+        );
+    }
+
+    private void openCsvImportDialog(ViewOpenMode openMode) {
         try {
             Window ownerWindow = importCsvButton.getScene().getWindow();
-            NavigationResponse<CsvImportDialogController> response = viewNavigator.loadCsvDialogView(ownerWindow);
-            if(response.isLoaded()) {
-                alertService.info("Info", "Info", "Es ist bereits ein Importer Fenster offen, schließe dieses bitte zuerst");
-                return;
-            }
-            CsvImportDialogController<MassTransfer> dialogController = response.controller();
-            MassTransferCsvReader reader = new MassTransferCsvReader();
-            reader.setCurrentUser(this.currentUser);
-            reader.setUserService(this.userService);
-            dialogController.initialize(reader, this::addTransactionToBatch);
+            viewNavigator.<MassTransfer>loadCsvDialogView(
+                    openMode,
+                    ownerWindow,
+                    navigationHandle,
+                    controller -> {
+                        MassTransferCsvReader reader = new MassTransferCsvReader();
+                        reader.setCurrentUser(this.currentUser);
+                        reader.setUserService(this.userService);
+                        controller.initialize(reader, this::addTransactionToBatch);
+                    }
+            );
         } catch (Exception e) {
             alertService.error("Fenster konnte nicht geöffnet werden", "Fehler beim Laden des CSV-Import-Dialogs. Versuche es erneut oder starte die Anwendung neu: " + e.getMessage());
         }
@@ -562,30 +589,6 @@ public class TransactionViewController {
         }
     }
 
-    private void onTransactionDetailDescriptionClicked(TransactionLite row) {
-        this.searchParameter = new TransactionViewSearchParameter(null, row.description(), null, null, null, null, null);
-        initialize(currentUser, searchParameter);
-    }
-
-    private void onTransactionDetailSenderClicked(TransactionLite row) {
-        this.searchParameter = new TransactionViewSearchParameter(null, null, null, null, row.senderUsername(), null, null);
-        initialize(currentUser, searchParameter);
-    }
-
-    private void onTransactionDetailRecipientClicked(TransactionLite row) {
-        this.searchParameter = new TransactionViewSearchParameter(null, null, null, null, row.recipientUsername(), null, null);
-        initialize(currentUser, searchParameter);
-    }
-
-    private void onTransactionDetailAmountClicked(TransactionLite row) {
-        BigDecimal amount = row.amount();
-        BigDecimal min = amount.setScale(0, RoundingMode.FLOOR);
-        BigDecimal max = amount.setScale(0, RoundingMode.CEILING);
-
-        this.searchParameter = new TransactionViewSearchParameter(null, null, null, null, null, min, max);
-        initialize(currentUser, searchParameter);
-    }
-
     @FXML
     private void onReloadTransactions() {
         reloadTransactionList();
@@ -593,7 +596,7 @@ public class TransactionViewController {
 
     @FXML
     private void onBackToMainView() {
-        viewNavigator.showMainView();
+        NavigationActions.backOrElse(navigationHandle, viewNavigator::showMainView);
     }
 
     @FXML
@@ -699,12 +702,6 @@ public class TransactionViewController {
     }
 
     @FXML
-    private void onImportCsv() {
-        openCsvImportDialog();
-        updateBalances();
-    }
-
-    @FXML
     private void onExecuteSingle() {
         TransactionLite transactionLite = transactionInfosToTransactionLite();
         if (transactionLite == null) {
@@ -735,5 +732,10 @@ public class TransactionViewController {
         }
         updateBalances();
         addTransactionsToList(result);
+    }
+
+    @Override
+    public void setNavigationHandle(NavigationHandle navigationHandle) {
+        this.navigationHandle = navigationHandle;
     }
 }

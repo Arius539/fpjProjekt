@@ -33,7 +33,6 @@
                     <HBox spacing="16">
                         <StackPane fx:id="senderBox"
                                    styleClass="clickable-box"
-                                   onMouseClicked="#onSenderClicked"
                                    HBox.hgrow="ALWAYS">
                             <padding>
                                 <Insets top="8" right="16" bottom="8" left="16"/>
@@ -49,7 +48,6 @@
 
                         <StackPane fx:id="empfaengerBox"
                                    styleClass="clickable-box"
-                                   onMouseClicked="#onRecipientClicked"
                                    HBox.hgrow="ALWAYS">
                             <padding>
                                 <Insets top="8" right="16" bottom="8" left="16"/>
@@ -65,8 +63,7 @@
                             </VBox>
                         </StackPane>
 
-                        <Button fx:id="reuseButton"
-                                text="als Vorlage verwenden"
+                        <Button text="als Vorlage verwenden"
                                 minWidth="140"
                                 onAction="#onReuseClicked"/>
                     </HBox>
@@ -79,8 +76,7 @@
                         <children>
                             <StackPane fx:id="betragBox"
                                        GridPane.columnIndex="0"
-                                       styleClass="clickable-box"
-                                       onMouseClicked="#onValueClicked">
+                                       styleClass="clickable-box">
                                 <padding>
                                     <Insets top="12" right="16" bottom="12" left="16"/>
                                 </padding>
@@ -111,8 +107,7 @@
                     </GridPane>
 
                     <StackPane fx:id="verwendungszweckBox"
-                               styleClass="clickable-box"
-                               onMouseClicked="#onDescriptionClicked">
+                               styleClass="clickable-box">
                         <padding>
                             <Insets top="16" right="16" bottom="16" left="16"/>
                         </padding>

@@ -24,7 +24,10 @@ import org.fpj.util.UiHelpers;
 import org.fpj.exceptions.DataNotPresentException;
 import org.fpj.exportimport.application.WallCommentCsvExporter;
 import org.fpj.exportimport.application.FileHandling;
-import org.fpj.navigation.ViewNavigator;
+import org.fpj.navigation.api.NavigationActions;
+import org.fpj.navigation.api.NavigationAware;
+import org.fpj.navigation.api.NavigationHandle;
+import org.fpj.navigation.api.ViewNavigator;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
 import org.fpj.wall.application.WallCommentService;
@@ -41,7 +44,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class WallCommentViewController {
+public class WallCommentViewController implements NavigationAware {
 
     private static final int PAGE_SIZE_COMMENTS = 30;
     private static final double PAGE_PRE_FETCH_THRESHOLD = 0.1;
@@ -66,9 +69,6 @@ public class WallCommentViewController {
     private TextArea newCommentTextArea;
 
     @FXML
-    private Button sendButton;
-
-    @FXML
     private ScrollPane scrollPane;
 
     @FXML
@@ -80,16 +80,11 @@ public class WallCommentViewController {
     @FXML
     private Button exportButton;
 
-    @FXML
-    private Button reloadButton;
-
-    @FXML
-    private ToggleGroup commentFilterToggleGroup;
-
     private InfinitePager<WallComment> commentsPager;
     private User currentUser;
     private User wallOwner;
     private AutoCompletionBinding<String> autoCompletionBinding;
+    private NavigationHandle navigationHandle;
 
     @Autowired
     public WallCommentViewController(WallCommentService wallCommentService, UserService userService, AlertService alertService, ViewNavigator viewNavigator) {
@@ -177,7 +172,7 @@ public class WallCommentViewController {
             return;
         }
 
-        scrollPane.vvalueProperty().addListener((obs, oldVal, newVal) -> {
+        scrollPane.vvalueProperty().addListener((ignoredObservable, ignoredOldValue, newVal) -> {
             if (newVal.doubleValue() >= 1.0 - PAGE_PRE_FETCH_THRESHOLD && commentsPager != null) {
                 commentsPager.ensureLoadedForScroll();
             }
@@ -235,7 +230,7 @@ public class WallCommentViewController {
 
     @FXML
     private void onBackToMainView() {
-        viewNavigator.showMainView();
+        NavigationActions.backOrElse(navigationHandle, viewNavigator::showMainView);
     }
 
     @FXML
@@ -347,9 +342,9 @@ public class WallCommentViewController {
         Label metaLabel = new Label(metaText);
         metaLabel.getStyleClass().add("comment-meta-label");
 
-        metaLabel.setOnMouseClicked(event -> onMetaClicked(comment));
-        metaLabel.setOnMouseEntered(e -> metaLabel.getStyleClass().add("hover"));
-        metaLabel.setOnMouseExited(e -> metaLabel.getStyleClass().remove("hover"));
+        metaLabel.setOnMouseClicked(ignoredEvent -> onMetaClicked(comment));
+        metaLabel.setOnMouseEntered(ignoredEvent -> metaLabel.getStyleClass().add("hover"));
+        metaLabel.setOnMouseExited(ignoredEvent -> metaLabel.getStyleClass().remove("hover"));
 
         box.getChildren().addAll(textLabel, metaLabel);
         return box;
@@ -374,5 +369,10 @@ public class WallCommentViewController {
         }
         this.wallOwner = toUser;
         reload();
+    }
+
+    @Override
+    public void setNavigationHandle(NavigationHandle navigationHandle) {
+        this.navigationHandle = navigationHandle;
     }
 }

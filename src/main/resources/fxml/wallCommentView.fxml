@@ -75,8 +75,7 @@
                     </tooltip>
                 </Button>
 
-                <Button fx:id="reloadButton"
-                        text="↻"
+                <Button text="↻"
                         onAction="#onReloadWall"
                         styleClass="wall-secondary-button">
                     <tooltip>
@@ -114,7 +113,8 @@
                 <padding>
                     <Insets top="20" right="20" bottom="10" left="20"/>
                 </padding>
-                <ScrollPane fitToWidth="true"
+                <ScrollPane fx:id="scrollPane"
+                            fitToWidth="true"
                             pannable="true"
                             styleClass="wall-scroll">
                     <GridPane
@@ -157,8 +157,7 @@
                               styleClass="wall-new-comment-area"/>
 
                     <HBox alignment="CENTER_RIGHT">
-                        <Button fx:id="sendButton"
-                                text="Senden"
+                        <Button text="Senden"
                                 onAction="#onSendClicked"
                                 prefWidth="120"
                                 prefHeight="40"

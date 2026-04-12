@@ -1,4 +1,4 @@
-package org.fpj.navigation;
+package org.fpj.ui.theme;
 
 import javafx.scene.layout.StackPane;
 import org.junit.jupiter.api.Test;

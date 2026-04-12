@@ -1,17 +1,17 @@
 package org.fpj.javafxcontroller.mainView;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
+import javafx.stage.Window;
 import javafx.application.Platform;
 import org.fpj.util.AlertService;
-import org.fpj.navigation.NavigationResponse;
-import org.fpj.navigation.ViewNavigator;
-import org.fpj.javafxcontroller.TransactionViewController;
-import org.fpj.javafxcontroller.WallCommentViewController;
+import org.fpj.navigation.api.ViewNavigator;
+import org.fpj.navigation.api.ViewOpenMode;
+import org.fpj.navigation.fx.NavigationMenuBinder;
 import org.fpj.users.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -28,6 +28,12 @@ public class MainViewController {
 
     @FXML
     private ToggleButton themeButton;
+
+    @FXML
+    private Button transactionsButton;
+
+    @FXML
+    private Button wallCommentsButton;
 
     @FXML
     private Label lblEmail;
@@ -71,7 +77,17 @@ public class MainViewController {
         lblEmail.setText(currentUser.getUsername());
         transactionsLiteController.initialize(currentUser, this::updateBalanceLabel);
         chatPreviewController.initialize(currentUser);
-        Platform.runLater(() -> viewNavigator.registerMainWindowLayers("main", mainContentLayer, overlayLayer, messageLayer, mainViewContent));
+        Platform.runLater(() -> viewNavigator.attachMainWindowHost("main", mainContentLayer, overlayLayer, messageLayer, mainViewContent));
+        NavigationMenuBinder.attach(
+                transactionsButton,
+                viewNavigator.defaultModeForTransactionView(),
+                this::openTransactionView
+        );
+        NavigationMenuBinder.attach(
+                wallCommentsButton,
+                viewNavigator.defaultModeForWallCommentView(),
+                this::openWallCommentView
+        );
 
         boolean isDark = !viewNavigator.isWhiteMode();
         themeButton.setSelected(isDark);
@@ -79,24 +95,30 @@ public class MainViewController {
     }
     // </editor-fold>
 
-    @FXML
-    public void actionTransactions() {
+    private void openTransactionView(ViewOpenMode openMode) {
         try{
-            NavigationResponse<TransactionViewController> response= viewNavigator.loadTransactionView();
-            if(!response.isLoaded()) response.controller().initialize(currentUser, null);
+            Window ownerWindow = mainContentLayer.getScene().getWindow();
+            viewNavigator.loadTransactionView(
+                    openMode,
+                    ownerWindow,
+                    controller -> controller.initialize(currentUser, null)
+            );
         }catch (Exception e){
-            this.alertService.error("Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
+            this.alertService.error("Fehler", "Es ist ein Fehler beim Laden der Transaktionsansicht aufgetreten.");
         }
 
     }
 
-    @FXML
-    public void actionWallComments() {
+    private void openWallCommentView(ViewOpenMode openMode) {
         try{
-           NavigationResponse<WallCommentViewController> response= viewNavigator.loadWallCommentView();
-           if(!response.isLoaded()) response.controller().load(currentUser, currentUser);
+           Window ownerWindow = mainContentLayer.getScene().getWindow();
+           viewNavigator.loadWallCommentView(
+                   openMode,
+                   ownerWindow,
+                   controller -> controller.load(currentUser, currentUser)
+           );
         }catch (Exception e){
-            this.alertService.error( "Fehler", "Es ist eine Fehler beim Laden des Transaktionsfensters aufgetreten");
+            this.alertService.error("Fehler", "Es ist ein Fehler beim Laden der Pinnwand aufgetreten.");
         }
     }
 

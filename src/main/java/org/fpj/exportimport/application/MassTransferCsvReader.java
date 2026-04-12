@@ -34,7 +34,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROT
 @Component
 @Scope(SCOPE_PROTOTYPE)
 @Setter
-public class MassTransferCsvReader implements CsvReader {
+public class MassTransferCsvReader implements CsvReader<MassTransfer> {
     private static final Logger LOGGER = LoggerFactory.getLogger(MassTransferCsvReader.class);
 
     UserService userService;

@@ -3,7 +3,7 @@ package org.fpj;
 
 import javafx.application.Application;
 import javafx.stage.Stage;
-import org.fpj.navigation.ViewNavigator;
+import org.fpj.navigation.api.ViewNavigator;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 

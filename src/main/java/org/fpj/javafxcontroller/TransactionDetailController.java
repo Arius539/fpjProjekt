@@ -1,24 +1,28 @@
 package org.fpj.javafxcontroller;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.fpj.navigation.api.NavigationAware;
+import org.fpj.navigation.api.NavigationHandle;
+import org.fpj.navigation.api.ViewNavigator;
+import org.fpj.navigation.api.ViewOpenMode;
+import org.fpj.navigation.fx.NavigationMenuBinder;
 import org.fpj.payments.domain.TransactionLite;
 import org.fpj.users.domain.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_PROTOTYPE;
 
 @Component
 @Scope(SCOPE_PROTOTYPE)
-public class TransactionDetailController {
+public class TransactionDetailController implements NavigationAware {
 
 
     public StackPane typeBox;
@@ -50,20 +54,31 @@ public class TransactionDetailController {
     private Label transaktionsTyp;
 
     private TransactionLite transaction;
-    private Consumer<TransactionLite> onSenderClicked;
-    private Consumer<TransactionLite> onRecipientClicked;
+    private BiConsumer<TransactionLite, ViewOpenMode> onSenderClicked;
+    private BiConsumer<TransactionLite, ViewOpenMode> onRecipientClicked;
     private Consumer<TransactionLite> onReuseClicked;
-    private Consumer<TransactionLite> onDescriptionClicked;
-    private Consumer<TransactionLite> onValueClicked;
+    private BiConsumer<TransactionLite, ViewOpenMode> onDescriptionClicked;
+    private BiConsumer<TransactionLite, ViewOpenMode> onValueClicked;
     private Consumer<TransactionLite> onTransactionTypeClicked;
     private User currentUser;
+    private NavigationHandle navigationHandle;
+    private ViewOpenMode transactionViewDefaultOpenMode = ViewOpenMode.REPLACE_MAIN_CONTENT;
+    @Autowired
+    private ViewNavigator viewNavigator;
 
     // <editor-fold defaultstate="collapsed" desc="initialize">
     @FXML
     private void initialize() {
     }
 
-    public void initialize(TransactionLite transaction, User currentUser, Consumer<TransactionLite> onSenderClicked, Consumer<TransactionLite> onRecipientClicked, Consumer<TransactionLite> onReuseClicked, Consumer<TransactionLite> onDescriptionClicked, Consumer<TransactionLite> onValueClicked) {
+    public void initialize(TransactionLite transaction,
+                           User currentUser,
+                           BiConsumer<TransactionLite, ViewOpenMode> onSenderClicked,
+                           BiConsumer<TransactionLite, ViewOpenMode> onRecipientClicked,
+                           Consumer<TransactionLite> onReuseClicked,
+                           BiConsumer<TransactionLite, ViewOpenMode> onDescriptionClicked,
+                           BiConsumer<TransactionLite, ViewOpenMode> onValueClicked,
+                           ViewOpenMode transactionViewDefaultOpenMode) {
         this.currentUser = currentUser;
         this.transaction = transaction;
         this.onSenderClicked = onSenderClicked;
@@ -72,34 +87,18 @@ public class TransactionDetailController {
         this.onDescriptionClicked = onDescriptionClicked;
         this.onValueClicked = onValueClicked;
         this.onTransactionTypeClicked= null;
+        this.transactionViewDefaultOpenMode = transactionViewDefaultOpenMode != null
+                ? transactionViewDefaultOpenMode
+                : ViewOpenMode.REPLACE_MAIN_CONTENT;
         updateView();
         updateClickability();
+        bindNavigationTargets();
     }
     // </editor-fold>
 
     @FXML
-    private void onSenderClicked(MouseEvent event) {
-        handleAndClose(event.getSource(), onSenderClicked);
-    }
-
-    @FXML
-    private void onRecipientClicked(MouseEvent event) {
-        handleAndClose(event.getSource(), onRecipientClicked);
-    }
-
-    @FXML
-    private void onValueClicked(MouseEvent event) {
-        handleAndClose(event.getSource(), onValueClicked);
-    }
-
-    @FXML
-    private void onDescriptionClicked(MouseEvent event) {
-        handleAndClose(event.getSource(), onDescriptionClicked);
-    }
-
-    @FXML
-    private void onReuseClicked(ActionEvent event) {
-        handleAndClose(event.getSource(), onReuseClicked);
+    private void onReuseClicked() {
+        handle(onReuseClicked);
     }
 
     private void updateView() {
@@ -142,6 +141,20 @@ public class TransactionDetailController {
         setClickableStyle(verwendungszweckBox, onDescriptionClicked != null);
     }
 
+    private void bindNavigationTargets() {
+        NavigationMenuBinder.attach(senderBox, 1, this::resolveTransactionViewDefaultMode, openMode -> handle(onSenderClicked, openMode));
+        NavigationMenuBinder.attach(empfaengerBox, 1, this::resolveTransactionViewDefaultMode, openMode -> handle(onRecipientClicked, openMode));
+        NavigationMenuBinder.attach(betragBox, 1, this::resolveTransactionViewDefaultMode, openMode -> handle(onValueClicked, openMode));
+        NavigationMenuBinder.attach(verwendungszweckBox, 1, this::resolveTransactionViewDefaultMode, openMode -> handle(onDescriptionClicked, openMode));
+    }
+
+    private ViewOpenMode resolveTransactionViewDefaultMode() {
+        if (viewNavigator == null) {
+            return transactionViewDefaultOpenMode;
+        }
+        return viewNavigator.resolveChildDefaultOpenMode(transactionViewDefaultOpenMode, navigationHandle);
+    }
+
     private void setClickableStyle(StackPane pane, boolean clickable) {
         if (pane == null) {
             return;
@@ -151,21 +164,36 @@ public class TransactionDetailController {
         pane.setMouseTransparent(!clickable);
     }
 
-    private void handleAndClose(Object source, Consumer<TransactionLite> handler) {
+    private void handle(BiConsumer<TransactionLite, ViewOpenMode> handler, ViewOpenMode openMode) {
+        if (handler == null || transaction == null) {
+            return;
+        }
+        handler.accept(transaction, openMode);
+    }
+
+    private void handle(Consumer<TransactionLite> handler) {
         if (handler == null || transaction == null) {
             return;
         }
         handler.accept(transaction);
-        closeStageFromSource(source);
     }
 
-    private void closeStageFromSource(Object source) {
-        if (!(source instanceof Node node)) {
+    private void closeCurrentStage() {
+        if (senderBox == null || senderBox.getScene() == null) {
             return;
         }
-        Stage stage = (Stage) node.getScene().getWindow();
+        Stage stage = (Stage) senderBox.getScene().getWindow();
         if (stage != null) {
             stage.close();
         }
+    }
+
+    @Override
+    public void setNavigationHandle(NavigationHandle navigationHandle) {
+        this.navigationHandle = navigationHandle;
+    }
+
+    public NavigationHandle navigationHandle() {
+        return navigationHandle;
     }
 }

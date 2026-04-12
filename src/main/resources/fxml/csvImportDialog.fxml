@@ -12,6 +12,21 @@
             styleClass="app-root-surface"
             stylesheets="@/styles/transactionView.css">
 
+    <top>
+        <HBox alignment="CENTER_LEFT"
+              spacing="10.0"
+              styleClass="view-header-bar">
+            <padding>
+                <Insets top="12.0" right="12.0" bottom="0.0" left="12.0"/>
+            </padding>
+            <Button text="← Zurück"
+                    onAction="#onBackToPreviousView"
+                    styleClass="view-back-button"/>
+            <Label text="CSV-Import"
+                   styleClass="card-title"/>
+        </HBox>
+    </top>
+
     <center>
         <GridPane hgap="12.0" vgap="12.0"
                   BorderPane.alignment="CENTER"
@@ -69,8 +84,7 @@
                               GridPane.rowIndex="1"
                               GridPane.columnIndex="1">
                             <Region HBox.hgrow="ALWAYS"/>
-                            <Button fx:id="startImportButton"
-                                    text="Import starten"
+                            <Button text="Import starten"
                                     onAction="#onStartImport"/>
                         </HBox>
                     </GridPane>

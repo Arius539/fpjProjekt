@@ -16,16 +16,17 @@ import org.controlsfx.control.textfield.TextFields;
 import org.fpj.util.AlertService;
 import org.fpj.paging.InfinitePager;
 import org.fpj.util.UiHelpers;
-import org.fpj.navigation.NavigationResponse;
 import org.fpj.exceptions.DataNotPresentException;
-import org.fpj.navigation.ViewNavigator;
-import org.fpj.javafxcontroller.ChatWindowController;
+import org.fpj.navigation.api.ViewNavigator;
+import org.fpj.navigation.api.ViewOpenMode;
+import org.fpj.navigation.fx.NavigationMenuBinder;
 import org.fpj.messaging.application.DirectMessageService;
 import org.fpj.messaging.domain.ChatPreview;
 import org.fpj.users.application.UserService;
 import org.fpj.users.domain.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +36,7 @@ import java.util.Objects;
 
 @Component
 public class ChatPreviewController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatPreviewController.class);
 
     private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private static final int PAGE_SIZE_CHAT_PREVIEWS = 20;
@@ -87,7 +89,7 @@ public class ChatPreviewController {
     private void initChatList() {
         lvChats.setItems(chatPreviews);
 
-        lvChats.setCellFactory(listView -> new ListCell<>() {
+        lvChats.setCellFactory(ignoredListView -> new ListCell<>() {
             @Override
             protected void updateItem(ChatPreview item, boolean empty) {
                 super.updateItem(item, empty);
@@ -102,7 +104,7 @@ public class ChatPreviewController {
                 String subtitleText = buildSubtitleText(item);
                 String timestampText = buildTimestampText(item);
 
-                HBox root = createChatPreviewBox(titleText, subtitleText, timestampText, () -> openChatForPreview(item));
+                HBox root = createChatPreviewBox(titleText, subtitleText, timestampText, item);
                 setGraphic(root);
 
                 int index = getIndex();
@@ -155,12 +157,12 @@ public class ChatPreviewController {
         binding.setOnAutoCompleted(event -> {
             String selected = event.getCompletion();
             chatsUsernameSearch.setText(selected);
-            openChatForUsername(selected);
+            openChatForUsername(selected, viewNavigator.defaultModeForChatWindow());
         });
     }
     // </editor-fold>
 
-    private HBox createChatPreviewBox(String titleText, String subtitleText, String timestampText, Runnable onDoubleClick) {
+    private HBox createChatPreviewBox(String titleText, String subtitleText, String timestampText, ChatPreview preview) {
         Label title = new Label(titleText);
         Label subtitle = new Label(subtitleText);
         VBox left = new VBox(2, title, subtitle);
@@ -170,35 +172,38 @@ public class ChatPreviewController {
 
         HBox root = new HBox(8, left, spacer, timestampLabel);
         HBox.setHgrow(spacer, Priority.ALWAYS);
-
-        root.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2 && onDoubleClick != null) {
-                onDoubleClick.run();
-            }
-        });
+        NavigationMenuBinder.attach(
+                root,
+                2,
+                viewNavigator.defaultModeForChatWindow(),
+                openMode -> openChatForPreview(preview, openMode)
+        );
 
         return root;
     }
 
-    private void openChatForPreview(ChatPreview preview) {
+    private void openChatForPreview(ChatPreview preview, ViewOpenMode openMode) {
         if (preview == null) {
             return;
         }
-        openChatForUsername(preview.name());
+        openChatForUsername(preview.name(), openMode);
     }
 
-    private void openChatForUsername(String username) {
+    private void openChatForUsername(String username, ViewOpenMode openMode) {
         try {
             validateUsername(username);
             User chatPartner = userService.findByUsername(username);
-            NavigationResponse<ChatWindowController> chatView = viewNavigator.loadChatView(username);
-            if(!chatView.isLoaded()) chatView.controller().openChat(currentUser, chatPartner);
+            viewNavigator.loadChatView(
+                    username,
+                    openMode,
+                    lvChats.getScene().getWindow(),
+                    controller -> controller.openChat(currentUser, chatPartner)
+            );
         } catch (IllegalArgumentException | DataNotPresentException ex) {
             alertService.error("Fehler beim Laden des Chatfensters", ex.getMessage());
         } catch (Exception ex) {
+            LOGGER.error("Fehler beim Laden des Chatfensters für {}", username, ex);
             alertService.error( "Unerwarteter Fehler", "Es ist ein unerwarteter Fehler beim Laden des Chatfensters aufgetreten. Bitte versuche es später erneut.");
-            System.out.println("Fehler beim Laden des Chatfensters"+ ex.getMessage());
-            ex.printStackTrace();
         }
     }
 

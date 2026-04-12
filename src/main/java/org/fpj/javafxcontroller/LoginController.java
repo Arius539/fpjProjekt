@@ -9,7 +9,7 @@ import javafx.scene.control.TextField;
 import lombok.Setter;
 import org.fpj.util.AlertService;
 import org.fpj.exceptions.LoginFailedException;
-import org.fpj.navigation.ViewNavigator;
+import org.fpj.navigation.api.ViewNavigator;
 import org.fpj.users.application.LoginService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
